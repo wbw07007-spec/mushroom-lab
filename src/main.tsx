@@ -19,6 +19,16 @@ const pages = [
 const tasks = bank.exercises.flatMap<Task>(exercise => exercise.tasks)
 const storageKey = 'mushroom:p1:' + bank.version
 const syllabus = 'https://www.cambridgeinternational.org/Images/697427-2026-2027-syllabus.pdf'
+const studyNotes = [
+  { course: '9709 · M1', prefix: 'm1', topics: [
+    ['Motion in a straight line', '直线运动'], ['Forces and motion', '力与运动'], ['Forces in two dimensions', '二维力'],
+  ] },
+  { course: '0580 · Extended', prefix: 'ig0580', topics: [
+    ['Number', '数与运算'], ['Algebra and graphs', '代数与图像'], ['Coordinate geometry', '坐标几何'],
+    ['Geometry', '几何'], ['Mensuration', '度量'], ['Trigonometry', '三角学'],
+    ['Transformations and vectors', '变换与向量'], ['Probability', '概率'], ['Statistics', '统计'],
+  ] },
+] as const
 const terms = new RegExp('\\b(' + Object.keys(glossary).sort((a, b) => b.length - a.length).join('|') + ')\\b', 'gi')
 
 function MathText({ value, translate = false }: {value: string; translate?: boolean}) {
@@ -104,6 +114,16 @@ function App() {
         </section>)}
         <a className="button" href="#practice">{t('Practise this topic','练习这一专题')} →</a>
       </article>
+      <section className="cards study-notes" aria-label={t('Downloadable study notes', '可下载知识点整理')}>
+        {studyNotes.map(({course, prefix, topics}) => <article className="card" key={prefix}>
+          <h2>{course}</h2>
+          <ul>{topics.map(([en, cn], index) => <li key={en}>
+            <a href={import.meta.env.BASE_URL + 'study-notes/' + prefix + '-' + String(index + 1).padStart(2, '0') + '.pdf'}>
+              {t(en, cn)} (PDF)
+            </a>
+          </li>)}</ul>
+        </article>)}
+      </section>
     </>}
     {page === 'about' && <><p className="eyebrow">{t('Academic Portfolio','学术主页')}</p><h1>Bowen Wei</h1><article className="card reading"><h2>{t('Education','教育背景')}</h2><p>University of Manchester · Mathematics with Financial Mathematics</p><h2>{t('Teaching & curriculum','教学与课程开发')}</h2><p>{t('International mathematics teaching, curriculum development and mathematics teaching leadership.', '国际课程数学教学、课程开发与数学教研管理。')}</p></article></>}
     {page === 'practice' && <Practice t={t} progress={progress} complete={complete} />}
@@ -187,5 +207,4 @@ function Question({ task, context, step, t, onCorrect, previous, next }: {
 }
 
 createRoot(document.getElementById('root')!).render(<App />)
-
 
