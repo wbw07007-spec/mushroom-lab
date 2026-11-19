@@ -1,0 +1,726 @@
+我把我们之前关于 Mushroom Lab（蘑菇数学实验室） 的讨论全部整合成一份项目总规划。你可以直接复制到新的 ChatGPT Project 中，作为项目的初始说明和长期开发依据。
+
+这次我会把已经确定的需求、产品功能、技术方案、开发优先级和未来发展方向全部梳理清楚，同时明确哪些已经决定，哪些仍需要研究。
+
+PROJECT MASTER PLAN · V1.0
+
+# 🍄 Mushroom Lab
+
+### Interactive Mathematics Learning Platform
+
+Explore Mathematics Differently.
+
+项目核心定位
+
+规划阶段
+
+建立一个面向 IGCSE、A Level 和 Further Mathematics 学生的数学学习平台，融合个人学术主页、教学资源、交互式练习、数学词汇辅助和学生学习管理。
+
+## 一、完整项目规划（可直接复制）
+
+# Mushroom Lab 项目总规划书
+
+**Project Name:** Mushroom Lab
+
+**Chinese Name:** 蘑菇数学实验室
+
+**Slogan:** Explore Mathematics Differently.
+
+**Project Owner:** Bowen Wei
+
+**Project Type:** Independent Mathematics Education Platform
+
+**Project Status:** Planning and Early Prototype
+
+## 1. 项目背景与目标
+
+Mushroom Lab 是一个由国际课程数学教师主导开发的数学教育网站。
+
+项目灵感来源于 IXL Learning、AP Classroom 等在线学习平台，以及 Cambridge A Level Mathematics 对完整数学解题过程的要求。
+
+平台以 CAIE IGCSE 0580、AS & A Level Mathematics 9709 和 Further Mathematics 9231 为核心课程，未来逐步扩展至 Edexcel IAL Mathematics 等国际数学课程。
+
+**项目的主要目标：**
+
+1. 建立独立的数学教育品牌。
+2. 建立教师个人 Academic Portfolio。
+3. 建立完整的国际课程数学资源库。
+4. 开发以知识点为单位的交互式数学练习系统。
+5. 将 A Level 数学解题步骤转化为可自动批改的交互任务。
+6. 为中国学生提供数学语境下的英语词汇翻译。
+7. 建立学生学习记录、知识点掌握分析和教师管理系统。
+8. 尽可能利用成熟的 GitHub 开源项目，降低开发与维护成本。
+9. 优先保证中国大陆地区的访问稳定性。
+10. 逐步发展为可长期独立运营、扩展的数学教学平台。
+
+## 2. 品牌与视觉设计
+
+### 2.1 品牌定位
+
+网站正式采用以下品牌方向：
+
+**MUSHROOM LAB**
+
+中文名称：蘑菇数学实验室。
+
+名称源于项目创建者的“蘑菇老师”身份。
+
+品牌应体现数学、探索、实验和发现的精神。
+
+整体风格应兼具：
+
+- 现代数学教育
+- 学术专业性
+- 适当的趣味性
+- 简洁清晰的交互设计
+- 国际化视觉语言
+
+避免过度卡通化或传统学校官网风格。
+
+### 2.2 视觉风格
+
+暂定配色：
+
+- 奶油白：主要背景
+- 深墨绿：主要品牌色
+- 暖灰：辅助信息
+- 蘑菇橙：交互强调色
+
+Logo 方向：
+
+采用简洁抽象的蘑菇元素，并尝试融合 π、函数曲线或几何图案。
+
+### 2.3 网站语言
+
+英文为主要语言，支持中英文界面切换。
+
+数学题目默认保持英文原题，通过内置翻译功能辅助理解。
+
+## 3. 网站总体架构
+
+网站采用统一品牌，分为以下核心模块。
+
+### 3.1 Home
+
+网站品牌首页。
+
+内容包括：
+
+- Mushroom Lab 品牌介绍
+- 数学教育理念
+- 课程体系入口
+- 精选教学资源
+- 交互式数学演示
+- 在线练习入口
+- 教师个人简介
+
+### 3.2 Mushroom Academy
+
+课程学习中心。
+
+主要课程：
+
+**Cambridge IGCSE Mathematics 0580**
+
+按官方考纲和知识点组织课程。
+
+**Cambridge AS & A Level Mathematics 9709**
+
+初期包括：
+
+- Pure Mathematics 1 (P1)
+- Pure Mathematics 3 (P3)
+- Mechanics (M1)
+- Probability & Statistics 1 (S1)
+
+**Cambridge Further Mathematics 9231**
+
+包括：
+
+- Further Pure Mathematics 1
+- Further Pure Mathematics 2
+- Further Mechanics
+- Further Probability & Statistics
+
+**Edexcel International A Level Mathematics**
+
+未来增加 FP1、FP2、FP3、M2、S2、D1 等模块。
+
+每个课程采用：
+
+Course → Chapter → Topic → Skill
+
+的知识点层级结构。
+
+知识点应尽可能对应官方 Syllabus Learning Outcomes，而不是仅依赖某一本教材的章节结构。
+
+### 3.3 Mushroom Practice
+
+**整个项目的核心特色模块。**
+
+学生可以直接在网页上完成数学练习，不需要安装专门软件。
+
+主要题型：
+
+**A. Single Choice**
+
+单项选择题。
+
+适合基础运算、知识理解、图像识别与结果判断。
+
+**B. Multiple Choice**
+
+多项选择题。
+
+适合数学性质、条件判断与综合理解。
+
+**C. Mathematical Input**
+
+数学填空题。
+
+支持：
+
+- 数值
+- 分数
+- 根式
+- 代数表达式
+- 方程的根
+- 区间
+- 坐标
+- 合理数值误差
+
+未来接入符号数学判断工具，支持数学等价表达式的自动批改。
+
+**D. Step-by-Step Practice**
+
+A Level 数学特色练习形式。
+
+将一道完整结构化题目拆分为多个可交互步骤。
+
+例如：
+
+Step 1：Identify the correct method.
+
+Step 2：Choose the correct mathematical expression.
+
+Step 3：Complete the calculation.
+
+Step 4：Determine the final result.
+
+Step 5：Interpret the mathematical conclusion.
+
+根据具体题目，可以混合使用选择题、填空题和图像操作。
+
+**E. Interactive Graph**
+
+学生直接操作函数、参数、坐标或图像，完成数学问题。
+
+例如：
+
+- Functions transformations
+- Quadratic graphs
+- Trigonometric graphs
+- Differentiation and stationary points
+- Vectors and geometry
+
+**F. Step Ordering**
+
+将数学解题步骤以卡片形式呈现，学生需要判断正确的逻辑顺序。
+
+对于存在多种正确解题路径的题目，需要支持多个可接受的解答序列。
+
+### 3.4 交互式过程评分
+
+以 CAIE 数学 Mark Scheme 的评分理念作为教学设计参考。
+
+关注：
+
+- M：Method
+- A：Accuracy
+- B：Independent Mark
+
+每个交互步骤可与相应的知识点、方法和评分指标关联。
+
+但必须明确：
+
+**交互练习成绩不等于 CAIE 官方考试分数。**
+
+通过选项识别正确方法，并不能完全证明学生具备独立书写该方法的能力。
+
+平台应保留 Independent Practice 和 Exam Practice，以降低学生对选择提示的依赖。
+
+### 3.5 三种练习模式
+
+**Guided Practice**
+
+提供步骤引导、即时反馈和学习提示。
+
+**Independent Practice**
+
+减少提示，要求学生独立输入关键结果。
+
+**Exam Practice**
+
+接近真实考试要求，默认隐藏翻译与提示，提供计时及完整答案核对功能。
+
+### 3.6 Mathematics Translation
+
+数学英语辅助阅读系统。
+
+采用已确定的 **数学关键词优先识别方案 B**。
+
+电脑端：
+
+鼠标悬停英文单词或词组时显示中文释义。
+
+手机和平板端：
+
+点击英文单词或词组显示释义。
+
+重点支持：
+
+- 数学专业词汇
+- CAIE 考试指令词
+- 数学固定搭配
+- 一般英语单词
+
+例如：
+
+- Hence
+- Deduce
+- Show that
+- Distinct roots
+- Exact value
+- At least
+- Respectively
+- Stationary point
+- Perpendicular
+- Normal
+
+优先进行词组级识别，避免逐词翻译导致语义错误。
+
+翻译弹窗可包含：
+
+1. 英文词汇
+2. 中文释义
+3. 数学语境解释
+4. 简短 Exam Tip
+
+采用本地数学词典优先的方案，减少对外部翻译 API 的依赖。
+
+未来支持学生个人生词本、词汇复习 Quiz、查词记录及教师端词汇分析。
+
+### 3.7 Resource Library
+
+教学资源中心。
+
+资源类型：
+
+- Study Notes
+- Worksheets
+- Homework
+- Worked Solutions
+- Chapter Reviews
+- Revision Checklists
+- Past Paper References
+- Interactive Exercises
+
+每份资源应包含课程、模块、章节、知识点、难度等标签。
+
+部分资源允许公开访问，部分资源仅向已授权学生开放。
+
+涉及第三方教材、CAIE 历年真题或 Mark Scheme 的内容时，必须核查版权和使用许可。优先发布原创题目和自编教学材料。
+
+### 3.8 Math Lab
+
+独立的交互式数学实验室。
+
+主要目标是让学生通过改变参数、移动点或操作图像理解数学概念。
+
+未来计划包括：
+
+- Function Transformation Visualiser
+- Quadratic Explorer
+- Trigonometric Explorer
+- Differentiation Visualiser
+- Integration Visualiser
+- Complex Plane
+- 3D Vectors
+- Polar Coordinates
+
+可优先评估 JSXGraph 等成熟的开源数学可视化工具。
+
+### 3.9 Student Portal
+
+未来学生管理系统。
+
+学生可以：
+
+- 登录个人账户
+- 查看分配的作业
+- 完成在线 Quiz
+- 保存练习进度
+- 查看成绩与反馈
+- 查看知识点掌握情况
+- 复习错题
+- 使用数学词汇本
+
+普通公开练习允许免登录使用。
+
+班级 Quiz、长期学习记录、教师发布的作业和私人学习数据则需要登录。
+
+### 3.10 Teacher Dashboard
+
+教师管理系统。
+
+主要包括：
+
+- Question Bank Management
+- Question Builder
+- Assignment Management
+- Quiz Management
+- Student Management
+- Class Analytics
+- Resource Management
+
+其中 Question Builder 是重要的长期开发模块。
+
+教师不需要编写代码，即可：
+
+1. 输入数学题目。
+2. 添加数学公式和图像。
+3. 设置选择题选项。
+4. 添加正确答案。
+5. 配置分步骤解题。
+6. 定义评分规则。
+7. 添加知识点与难度标签。
+8. 编写解析和提示。
+9. 预览学生界面。
+10. 发布在线练习。
+
+未来可以增加 AI 辅助出题和审核功能，但正式题目仍由教师把关。
+
+### 3.11 Academic Portfolio
+
+Bowen Wei 个人学术主页。
+
+主要包括：
+
+- Education
+- Teaching Experience
+- Mathematics Education
+- Curriculum Development
+- Educational Leadership
+- Teaching Philosophy
+- Research Interests
+- Contact
+
+展示曼彻斯特大学 Mathematics with Financial Mathematics 教育背景、国际课程数学教学经历、课程开发和数学教研管理实践。
+
+个人主页属于 Mushroom Lab 的一个独立栏目，不与学生学习系统混为一体。
+
+## 4. 自适应学习与数据分析
+
+未来建立知识点掌握系统。
+
+每道题需要标注：
+
+- Syllabus
+- Component
+- Chapter
+- Topic
+- Skill
+- Difficulty
+- Marks
+- Answer Type
+- Correct Answer
+- Worked Solution
+- Common Misconceptions
+
+学生作答后记录各知识点表现。
+
+未来可进一步分析：
+
+- 正确率
+- 作答次数
+- 提示使用情况
+- 练习时间
+- 常见错误
+- 历史进步趋势
+
+根据学习情况推荐基础练习、巩固练习或挑战练习。
+
+可探索 IXL 风格的 Skills Practice，但不直接复制其专有评分算法或产品设计。
+
+## 5. 技术架构
+
+初步采用：
+
+**Frontend**
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+
+**Mathematics**
+
+- KaTeX
+- JSXGraph
+- 数学表达式输入组件
+- 数学符号等价判断工具
+
+**Development**
+
+- GitHub
+- GitHub Actions
+- VS Code / Codex
+
+**Hosting**
+
+第一阶段使用 GitHub Pages。
+
+**Database**
+
+第一阶段不强制使用数据库。
+
+后续按中国大陆访问情况、部署成本、安全性和功能需求选择数据库及后端服务。
+
+### 开源项目研究方向
+
+重点研究：
+
+- Numbas：数学题目引擎与自动批改
+- STACK：符号数学评分
+- Step-Wise：分步骤学习与技能追踪
+- JSXGraph：交互式数学图像
+- MathLive：数学表达式输入
+- SymPy：符号数学处理
+
+所有项目必须先核查许可证、版本兼容性、维护状态、部署方式和集成成本。
+
+不预设一定要采用其中任何一个系统。
+
+## 6. 中国大陆访问要求
+
+网站主要服务中国大陆的国际课程学生。
+
+因此：
+
+1. 优先采用无需 VPN 的访问方案。
+2. 第一阶段测试 GitHub Pages。
+3. 尽可能将必要脚本和样式文件本地打包。
+4. 避免核心功能依赖 Google Fonts 或不稳定的海外 CDN。
+5. 数学词汇数据库尽量支持本地读取。
+6. 将外部 AI 服务作为可选功能。
+7. 实际测试国内不同设备及运营商的访问表现。
+8. 保留未来迁移至其他托管平台的能力。
+
+GitHub Pages 在中国大陆的可访问性不能视为绝对保证。
+
+## 7. 设备适配
+
+网站支持：
+
+- Windows 电脑
+- Mac
+- iPad
+- Android 平板
+- 手机浏览器
+
+在线练习不得强制要求 Apple Pencil。
+
+未来可以增加手写答题和图片上传功能。
+
+手写自动批改暂不列为第一阶段核心需求，因为它涉及数学 OCR、过程理解、评分可靠性及额外服务器成本。
+
+## 8. 开发阶段
+
+### Phase 1：Website Foundation
+
+建立完整网站基础结构。
+
+包括：
+
+- 网站首页
+- 品牌视觉
+- 导航
+- 双语界面基础
+- 课程目录
+- Resource Library 基础页面
+- About 页面
+- Practice 入口
+
+目标：获得一个可以实际访问的网站。
+
+### Phase 2：Interactive Practice MVP
+
+优先制作：
+
+**CAIE 9709 P1：Functions & Transformations**
+
+实现：
+
+- Single Choice
+- Multiple Choice
+- Step-by-Step Practice
+- Mathematical Input
+- 即时反馈
+- Worked Solutions
+- 数学关键词翻译
+- 本地进度记录
+
+目标：验证一个完整知识点的在线练习体验。
+
+### Phase 3：Question Builder
+
+建立教师端题目编辑功能。
+
+先支持创建、编辑、预览和发布交互式题目。
+
+目标：教师无需改动源代码即可持续扩充题库。
+
+### Phase 4：Question Bank Expansion
+
+建立结构化题库。
+
+首先覆盖 9709 P1，随后扩展至 P3、M1、S1、0580 和 9231。
+
+### Phase 5：Student Portal
+
+加入：
+
+- 登录
+- 班级管理
+- 作业发布
+- 成绩记录
+- 错题复习
+- 学习进度分析
+
+相关功能上线前必须完成数据权限、安全和隐私设计。
+
+### Phase 6：Advanced Learning Features
+
+探索：
+
+- 自适应练习
+- AI 辅助题目生成
+- AI 辅助教师批改
+- 词汇学习分析
+- 个性化学习推荐
+- 手写答题支持
+
+## 9. 第一版开发原则
+
+1. 先完成可运行的完整学习流程。
+2. 数学内容的正确性高于功能数量。
+3. 题目必须符合对应课程考纲。
+4. 步骤练习不得误导学生理解 CAIE 评分规则。
+5. 不以选择题完全替代独立解答训练。
+6. 学生界面应简洁、易操作。
+7. 尽可能利用开源工具，不重复开发成熟功能。
+8. 兼顾电脑、平板与手机。
+9. 不因为未开发学生登录系统而阻碍公开练习使用。
+10. 持续考虑中国大陆网络访问可靠性。
+
+## 10. 第一阶段验收标准
+
+Mushroom Lab 第一阶段成功的标准是：
+
+- 网站能够通过公开网址访问。
+- 首页和课程页面能够正常显示。
+- 学生可以进入一个实际的 P1 知识点练习。
+- 学生能够完成选择题和分步骤练习。
+- 系统可以判断答案并显示解析。
+- 英文题目能够提供数学关键词翻译。
+- 练习在电脑及手机上均能正常操作。
+- 后续能够在不重建项目的前提下扩展新题型。
+
+**项目长期愿景：**
+
+建立一套以数学理解、解题逻辑、精准反馈和个性化学习为核心的国际课程数学学习平台。
+
+Mushroom Lab 不只是一个题库，也不只是一个个人网站，而是一个能够持续积累教学内容和学习成果的数字数学实验室。
+
+## 二、我建议在新 Project 中这样安排工作
+
+为了避免我们后面同时讨论 Logo、服务器、题库、界面和 AI 批改，导致开发方向混乱，我建议把项目划分为五个工作流。
+
+01 · Brand & UI Design
+
+网站设计系统、Logo、配色、首页、各模块页面。
+
+02 · Website Development
+
+React 项目、GitHub、部署、响应式布局、性能与国内访问测试。
+
+03 · Curriculum & Question Bank
+
+考纲知识点体系、原创数学题库、解析、难度及技能标签。
+
+04 · Interactive Practice Engine
+
+选择题、步骤练习、公式输入、翻译、评分及 Question Builder。
+
+05 · Student & Teacher Platform
+
+学生登录、作业、Quiz、成绩、学习分析及教师管理后台。
+
+## 三、新项目第一条消息
+
+你可以在新 Project 中使用下面这段作为开场指令。
+
+我们现在正式启动 **Mushroom Lab（蘑菇数学实验室）** 项目。
+
+请以我提供的《Mushroom Lab 项目总规划书》为长期项目依据。
+
+你需要同时担任：
+
+- 产品规划师（Product Manager）
+- 前端开发工程师（Frontend Developer）
+- UI/UX 设计师
+- 国际课程数学教学设计顾问
+- 开源技术研究顾问
+
+我们准备从头建立这个网站。
+
+**开发要求：**
+
+1. 保留个人学术主页、教学资源库和交互练习系统的完整定位，不因开发新功能而放弃其他模块。
+2. 优先研究成熟的 GitHub 开源项目，能合理复用的技术尽量不重复开发。
+3. 网站面向中国大陆国际课程学生，必须重视国内访问性能。
+4. 数学题目的准确性、解题逻辑和教学价值优先于花哨的技术效果。
+5. 采用分阶段开发方式，每一阶段都有明确、可运行、可测试的交付成果。
+6. 涉及重要的技术架构变更，先分析优缺点及长期维护成本。
+7. 统一管理项目的源代码、设计规范、题库结构和开发进度。
+8. 不要只制作静态设计图，最终需要一个可以实际使用的网站。
+
+**当前第一目标：**
+
+建立 Mushroom Lab V1.0 的基础架构、网站设计系统和 GitHub 项目，并制作一个能够实际运行的 CAIE 9709 P1 交互练习样板。
+
+先制定合理的开发计划和项目目录结构，然后开始实际搭建。
+
+## 四、迁移到新 Project 时建议保留的资料
+
+项目启动材料
+
+建议把以下资料放入新项目，避免重复整理。
+
+本条消息中的 Mushroom Lab 总规划书
+
+此前生成的 Mushroom Lab V0.1 源代码 ZIP（作为参考原型）
+
+CAIE 9709、9231 及 IGCSE 0580 的官方考纲
+
+现有 P1 Chapter 1 / Functions 的 Homework 和 Review 样题
+
+个人 Academic Portfolio 的基础资料
+
+5 / 5 项已准备
+
+最后，我建议新项目的开发顺序明确为：网站基础架构 → 一个完整的交互练习样板 → 教师题目编辑器 → 扩充题库 → 学生管理。
+
+尤其是教师题目编辑器，应该尽早纳入架构设计。因为你未来真正需要的不是让 AI 每次帮你重新编写一个练习页面，而是你自己能够随时创建一道 A Level 数学题，设置解题步骤、选项、翻译和反馈，然后直接发布给学生。
+
+这才是 Mushroom Lab 最值得长期投入的核心能力。🍄
