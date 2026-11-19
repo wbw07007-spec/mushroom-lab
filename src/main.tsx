@@ -7,7 +7,6 @@ import './styles.css'
 import mushroomMark from './mushroom-mark.svg'
 import { functionNotes } from './content/function-notes'
 import { ResourceCatalog } from './ResourceLibrary'
-import { PastPaperBank } from './PastPaperBank'
 import { TeacherEditor } from './TeacherEditor'
 import { bank, glossary } from './content/questions'
 import type { Task } from './content/questions'
@@ -96,7 +95,6 @@ function App() {
     </div></>}
     {page === 'library' && <>
       <h1>{t('Resource Library','教学资源库')}</h1>
-      <p><a className="button" href="#past-papers">{t('Past Paper Question Bank','历年真题索引')} →</a></p>
       <ResourceCatalog t={t} />
       <article className="card reading function-notes">
         <p className="eyebrow">9709 / P1 / 1.2</p>
@@ -111,7 +109,7 @@ function App() {
     </>}
     {page === 'about' && <><p className="eyebrow">{t('Academic Portfolio','学术主页')}</p><h1>Bowen Wei</h1><article className="card reading"><h2>{t('Education','教育背景')}</h2><p>University of Manchester · Mathematics with Financial Mathematics</p><h2>{t('Teaching & curriculum','教学与课程开发')}</h2><p>{t('International mathematics teaching, curriculum development and mathematics teaching leadership.', '国际课程数学教学、课程开发与数学教研管理。')}</p></article></>}
     {page === 'practice' && <Practice t={t} progress={progress} complete={complete} />}
-    {page === 'past-papers' && <PastPaperBank t={t} />}
+    {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
       <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
     {page !== 'teacher' && page !== 'past-papers' && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}

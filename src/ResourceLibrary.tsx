@@ -17,7 +17,7 @@ export function ResourceCatalog({ t }: { t: (en: string, cn: string) => string }
   function title(item: typeof catalog[number]) {
     switch (item.variant) {
       case 'section': return t('Section', '小节') + ' ' + item.chapter + '.' + item.section
-      case 'readable': return t('Homework · readable edition', '课后作业 · 易读版')
+      case 'readable': return t('Homework worked solutions · readable edition', '课后作业详解 · 易读版')
       case 'original': return t('Homework', '课后作业')
       case 'questions': return t('Review questions', '复习题')
       case 'Homework_Detailed': return t('Homework worked solutions', '课后作业详解')
@@ -28,7 +28,7 @@ export function ResourceCatalog({ t }: { t: (en: string, cn: string) => string }
 
   return <section className="card resource-catalog">
     <h2>{t('Pure Mathematics 1 · Resource catalogue', 'Pure Mathematics 1 教学资料目录')}</h2>
-    <p>{t('Browse the P1 collection by chapter and type. The original files are held in the teaching archive.', '按章节和类型查阅 P1 资料目录。原文件保存在教学资料库。')}</p>
+    <p>{t('This catalogue lists files held in the teaching archive. Online reading and downloads are not yet available for these entries.', '此目录列出教学资料库中的文件。这些条目暂未开放在线阅读或下载。')}</p>
     <div className="resource-filters">
       <label>{t('Chapter', '章节')}<select value={chapter} onChange={event => setChapter(Number(event.target.value))}>
         <option value={0}>{t('All chapters', '全部章节')}</option>
