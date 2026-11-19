@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { bank } from './content/questions'
 import type { Answer, Exercise, Task } from './content/questions'
+import { draftsKey, isExercise, parseDraft, readDrafts } from './teacher-drafts'
 
 type Props = {
   t: (en: string, cn: string) => string
@@ -17,6 +18,9 @@ export function TeacherEditor({ t, preview }: Props) {
   const [correct, setCorrect] = useState('')
   const [message, setMessage] = useState('')
   const [previewTask, setPreviewTask] = useState<Task>()
+  const [drafts, setDrafts] = useState(() => readDrafts({
+    getItem: key => window.localStorage.getItem(key),
+  }))
 
   function editTask(value: Task, position: number) {
     setTask(value)
@@ -62,7 +66,7 @@ export function TeacherEditor({ t, preview }: Props) {
   }
 
   function exportDraft() {
-    if (!exercise.id.trim() || !exercise.title.trim() || !exercise.tasks.length) {
+    if (!isExercise(exercise)) {
       setMessage(t('Enter an exercise ID and title, and save at least one step.', '请填写练习 ID 和标题，并至少保存一个步骤。'))
       return
     }
@@ -75,11 +79,58 @@ export function TeacherEditor({ t, preview }: Props) {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
+  function openDraft(draft: Exercise) {
+    setExercise(draft)
+    editTask(draft.tasks[0], 0)
+  }
+
+  function saveDraft() {
+    if (!isExercise(exercise)) {
+      setMessage(t('Enter an exercise ID and title, and save at least one step.', '请填写练习 ID 和标题，并至少保存一个步骤。'))
+      return
+    }
+    const draft = { ...exercise, id: exercise.id.trim(), title: exercise.title.trim() }
+    try {
+      const latest = readDrafts(window.localStorage)
+      const next = [...latest.filter(item => item.id !== draft.id), draft]
+      window.localStorage.setItem(draftsKey, JSON.stringify(next))
+      setDrafts(next)
+      setExercise(draft)
+      setMessage(t('Draft saved in this browser.', '草稿已保存在此浏览器。'))
+    } catch {
+      setMessage(t('Browser storage is unavailable. Export the draft as JSON to keep it.', '浏览器存储不可用，请导出 JSON 保存草稿。'))
+    }
+  }
+
+  async function importDraft(file: File) {
+    try {
+      const draft = parseDraft(await file.text())
+      if (draft) {
+        openDraft(draft)
+        setMessage(t('Draft imported. Save it in this browser to keep it here.', '草稿已导入。可保存到此浏览器。'))
+        return
+      }
+    } catch {
+      // Both unreadable and invalid files leave the current exercise in place.
+    }
+    setMessage(t('Choose a valid Mushroom Lab P1 exercise JSON file.', '请选择有效的 Mushroom Lab P1 练习 JSON 文件。'))
+  }
+
   return <>
     <h1 className="practice-title">{t('Question Builder', '教师题目编辑器')}</h1>
-    <p>{t('Create a draft or load a copy of a sample exercise. Save your steps, then export the draft as JSON.', '可新建草稿或载入样题副本。保存步骤后，将草稿导出为 JSON。')}</p>
+    <p>{t('Save each step, then save the exercise in this browser or export it as JSON.', '先保存各步骤，再把练习保存到此浏览器或导出为 JSON。')}</p>
     <div className="editor-layout">
       <section className="card editor-fields">
+        <button type="button" onClick={() => { setExercise(emptyExercise); editTask(emptyTask, -1) }}>{t('New exercise', '新建练习')}</button>
+        <label>{t('Open a saved draft', '打开本地草稿')}<select value="" onChange={event => {
+          const draft = drafts.find(item => item.id === event.target.value)
+          if (draft) openDraft(draft)
+        }}><option value="">{t('Choose a draft', '选择草稿')}</option>{drafts.map(draft => <option key={draft.id} value={draft.id}>{draft.title} · {draft.id}</option>)}</select></label>
+        <label>{t('Import an exercise JSON file', '导入练习 JSON')}<input type="file" accept=".json,application/json" onChange={event => {
+          const file = event.target.files?.[0]
+          event.target.value = ''
+          if (file) void importDraft(file)
+        }} /></label>
         <label>{t('Load a sample', '载入样题')}<select value="" onChange={event => {
           const sample = bank.exercises.find(item => item.id === event.target.value)
           if (sample) { setExercise(sample); editTask(sample.tasks[0], 0) }
@@ -89,7 +140,10 @@ export function TeacherEditor({ t, preview }: Props) {
         <label>{t('Shared context', '共用题干')}<textarea value={exercise.context ?? ''} onChange={event => setExercise({ ...exercise, context: event.target.value })} /></label>
         <div className="actions">{exercise.tasks.map((item, position) => <button key={item.id} onClick={() => editTask(item, position)}>{item.id}</button>)}
           <button onClick={() => editTask(emptyTask, -1)}>{t('New step', '新增步骤')}</button></div>
-        <button onClick={exportDraft}>{t('Export saved draft', '导出已保存的草稿')}</button>
+        <div className="actions">
+          <button type="button" onClick={saveDraft}>{t('Save draft in this browser', '保存到此浏览器')}</button>
+          <button type="button" onClick={exportDraft}>{t('Export draft as JSON', '导出草稿 JSON')}</button>
+        </div>
       </section>
       <section className="card editor-fields">
         <label>{t('Step ID', '步骤 ID')}<input value={task.id} onChange={event => setTask({ ...task, id: event.target.value })} /></label>
