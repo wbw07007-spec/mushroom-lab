@@ -6,6 +6,7 @@ import 'katex/dist/katex.min.css'
 import './styles.css'
 import mushroomMark from './mushroom-mark.svg'
 import { functionNotes } from './content/function-notes'
+import { ResourceCatalog } from './ResourceLibrary'
 import { TeacherEditor } from './TeacherEditor'
 import { bank, glossary } from './content/questions'
 import type { Task } from './content/questions'
@@ -94,6 +95,7 @@ function App() {
     </div></>}
     {page === 'library' && <>
       <h1>{t('Resource Library','教学资源库')}</h1>
+      <ResourceCatalog t={t} />
       <article className="card reading function-notes">
         <p className="eyebrow">9709 / P1 / 1.2</p>
         <h2>{t('Functions revision notes','函数复习笔记')}</h2>
