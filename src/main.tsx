@@ -5,6 +5,7 @@ import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import './styles.css'
 import mushroomMark from './mushroom-mark.svg'
+import { functionNotes } from './content/function-notes'
 import { TeacherEditor } from './TeacherEditor'
 import { bank, glossary } from './content/questions'
 import type { Task } from './content/questions'
@@ -91,7 +92,19 @@ function App() {
       <article className="card"><p className="eyebrow">0580</p><h2>IGCSE Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
       <article className="card"><p className="eyebrow">9231</p><h2>Further Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
     </div></>}
-    {page === 'library' && <><h1>{t('Resource Library','教学资源库')}</h1><article className="card reading"><p className="eyebrow">9709 / P1 / 1.2</p><h2>{t('Graph transformations','图像变换')}</h2><p><MathText value="$y=f(x-a)$" /> — {t('translate right by a units when a is positive.', '当 a 为正数时，向右平移 a 个单位。')}</p><p><MathText value="$y=-f(x)$" /> — {t('reflect in the x-axis.', '关于 x 轴反射。')}</p><p><MathText value="$y=f(x)+a$" /> — {t('translate up by a units when a is positive.', '当 a 为正数时，向上平移 a 个单位。')}</p><a href="#practice">{t('Practise these rules','练习这些规则')} →</a></article></>}
+    {page === 'library' && <>
+      <h1>{t('Resource Library','教学资源库')}</h1>
+      <article className="card reading function-notes">
+        <p className="eyebrow">9709 / P1 / 1.2</p>
+        <h2>{t('Functions revision notes','函数复习笔记')}</h2>
+        {functionNotes.map(note => <section key={note.title[0]}>
+          <h3>{note.title[zh ? 1 : 0]}</h3>
+          <p><MathText value={note.rule[zh ? 1 : 0]} /></p>
+          <p><MathText value={note.example[zh ? 1 : 0]} /></p>
+        </section>)}
+        <a className="button" href="#practice">{t('Practise this topic','练习这一专题')} →</a>
+      </article>
+    </>}
     {page === 'about' && <><p className="eyebrow">{t('Academic Portfolio','学术主页')}</p><h1>Bowen Wei</h1><article className="card reading"><h2>{t('Education','教育背景')}</h2><p>University of Manchester · Mathematics with Financial Mathematics</p><h2>{t('Teaching & curriculum','教学与课程开发')}</h2><p>{t('International mathematics teaching, curriculum development and mathematics teaching leadership.', '国际课程数学教学、课程开发与数学教研管理。')}</p></article></>}
     {page === 'practice' && <Practice t={t} progress={progress} complete={complete} />}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
