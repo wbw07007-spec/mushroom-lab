@@ -40,7 +40,7 @@ function isSignGraph(graph: unknown): boolean {
   return Array.isArray(graph.roots) && graph.roots.length === 2 &&
     graph.roots.every(isNumber) && graph.roots[0] < graph.roots[1] &&
     Array.isArray(graph.labels) && graph.labels.length === 2 && graph.labels.every(hasText) &&
-    hasText(graph.variable) && (graph.region === 'inside' || graph.region === 'outside')
+    hasText(graph.variable) && (graph.quantity === undefined || hasText(graph.quantity)) && (graph.region === 'inside' || graph.region === 'outside')
 }
 
 export function isExercise(exercise: unknown): exercise is Exercise {

@@ -4,9 +4,10 @@ import type { Task } from './content/questions'
 export function SignGraph({ graph }: { graph: NonNullable<Task['signGraph']> }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const [first, second] = graph.labels
+  const quantity = graph.quantity ?? 'The discriminant'
   const description = graph.region === 'inside'
-    ? `The discriminant is negative between ${first} and ${second}.`
-    : `The discriminant is positive to the left of ${first} and to the right of ${second}.`
+    ? `${quantity} is negative between ${first} and ${second}.`
+    : `${quantity} is positive to the left of ${first} and to the right of ${second}.`
 
   useEffect(() => {
     const canvas = ref.current
@@ -47,7 +48,7 @@ export function SignGraph({ graph }: { graph: NonNullable<Task['signGraph']> }) 
     c.stroke()
     c.fillStyle = '#173a30'
     c.font = '13px system-ui'
-    c.fillText('Δ', 16, 17)
+    c.fillText(graph.quantity ?? 'Δ', 16, 17)
     c.fillText(graph.variable, 382, 77)
     c.textAlign = 'center'
     for (const [root, label] of [[a, first], [b, second]] as const) {
