@@ -272,4 +272,110 @@ export const functionsCompanions: Exercise[] = [
     select(inverse, 'Choose the inverse and its domain.', '$3+5/(x-2),\\ x>2$', ['$3+5/(x+2),\\ x>2$', '$3-5/(x-2),\\ x>2$', '$3+5/(x-2),\\ x>3$'], '$x-2=5/(t-3)$ leads to $t=3+5/(x-2)$. Use the range of $f$ as the new domain.', 'The inverse excludes inputs at and below 2.'),
     select(compose, 'Choose $gf(x)$ in simplified form.', '$15/(x-3)$', ['$15/(x-3)+6$', '$5/(3x-6)$', '$15/(x-3)-6$'], '$3(2+5/(x-3))-6=15/(x-3)$. All outputs of $f$ exceed 2, so they are permitted inputs to $g$.', 'Distribute 3 before subtracting 6.'),
   ]),
+  exercise(44, 'Compare the ranges of two compositions', 'Let $f(x)=2(x-4)^2+k$ and $g(x)=3x-2$ on $\\mathbb R$.', [
+    number(compose, 'The minimum of $gf$ is 19. Find $k$.', 7, '$gf(x)=6(x-4)^2+3k-2$. Its minimum is $3k-2=19$.', 'Apply $g$ to the minimum output of $f$ because $g$ is increasing.'),
+    select(domain, 'For that value of $k$, choose the range of $fg$.', '$fg(x)\\ge7$', ['$fg(x)\\ge19$', '$fg(x)>7$', '$fg(x)\\le7$'], '$fg(x)=2(3x-6)^2+7$. The minimum is attained at $x=2$.', 'The inner linear function reaches every real number.'),
+    select(inverse, 'Choose $g^{-1}(x)$.', '$(x+2)/3$', ['$(x-2)/3$', '$3x+2$', '$x/3+2$'], 'Solve $x=3t-2$ for $t$.', 'Undo the subtraction before dividing.'),
+    select(compose, 'If $gh(x)=12x+13$, choose $h(x)$.', '$4x+5$', ['$4x+13/3$', '$4x+11/3$', '$36x+37$'], '$h(x)=g^{-1}(12x+13)=(12x+15)/3$.', 'Apply the inverse of the outer function.'),
+  ]),
+  exercise(45, 'Reflect and invert a restricted reciprocal square', 'Let $f(x)=3+9/x^2$ for $x<0$.', [
+    select(inverse, 'On your sketch, which mirror line and point belong to the inverse construction?', '$y=x$ and $f^{-1}$ passes through $(4,-3)$.', ['$y=-x$ and $f^{-1}$ passes through $(4,-3)$.', '$y=x$ and $f^{-1}$ passes through $(-3,4)$.', '$x=0$ and $f^{-1}$ passes through $(3,4)$.'], 'Reflect $( -3,4)$ in $y=x$. The inverse is increasing for $x>3$, approaches the line $x=3$ downwards, and approaches $y=0$ from below to the right.', 'Swap the coordinates of points on the original graph.'),
+    select(inverse, 'Choose $f^{-1}(x)$.', '$-3/\\sqrt{x-3}$', ['$3/\\sqrt{x-3}$', '$-3/\\sqrt{3-x}$', '$-\\sqrt{x-3}/3$'], 'Isolate $t^2=9/(x-3)$ and take the negative root because $t<0$.', 'The inverse outputs must lie in the original domain.'),
+    number(inverse, 'Solve $f(x)=7$.', -1.5, '$x^2=9/4$ and the original domain is negative.', 'Discard the positive root.'),
+    select(domain, 'Why does $f(x)=f^{-1}(x)$ have no solution?', 'The two domains are disjoint.', ['The two formulas have the same domain.', 'The original graph is not one-to-one.', 'Both functions have only positive outputs.'], '$f$ needs $x<0$, while $f^{-1}$ needs $x>3$. No input belongs to both.', 'A common input is required before comparing the two outputs.'),
+  ]),
+  exercise(46, 'Order a vertical stretch and two offsets', 'Map $y=x^2$ to $y=5(x+4)^2-6$ using a vertical stretch followed by one translation.', [
+    number(transform, 'Find the scale factor of the stretch parallel to the $y$-axis.', 5, 'The first transformation gives $y=5x^2$.', 'The outside multiplier multiplies vertical distances.'),
+    vector('Enter the translation vector to apply second.', [-4,-6], 'From $y=5x^2$, shift left 4 and down 6, giving $5(x+4)^2-6$. The column vector is $\\binom{-4}{-6}$.'),
+  ]),
+  exercise(47, 'A square root selects only one branch', 'Let $f(x)=x-2$ for $x>2$, $g(x)=3x^2+2$ for real $x$, and $h(x)=3x^2+2$ for $x\\ge0$.', [
+    select(inverse, 'Choose $f^{-1}(x)$.', '$x+2$', ['$x-2$', '$2-x$', '$1/(x-2)$'], 'Reverse the subtraction of 2 by adding 2, for inverse input $x>0$.', 'An inverse reverses the original operation.'),
+    select(domain, 'Choose the range of $g$ and decide whether it has an inverse.', '$g(x)\\ge2$, and no inverse exists on $\\mathbb R$.', ['$g(x)>2$, and no inverse exists.', '$g(x)\\ge2$, and an inverse exists.', '$g(x)\\le2$, and an inverse exists.'], 'The vertex gives the included minimum 2. Also $g(1)=g(-1)$, so $g$ is not one-to-one.', 'The unrestricted graph has two branches.'),
+    select(compose, 'Solve $hf(x)=f(19)$.', '$x=2+\\sqrt5$', ['$x=2-\\sqrt5$', '$x=\\sqrt5$', '$x=2+\\sqrt{17}$'], '$f(19)=17$, so $3(x-2)^2=15$. The condition $x>2$ selects the positive root of $(x-2)^2=5$.', 'The restriction on $f$ also limits the composite input.'),
+  ]),
+  exercise(48, 'Use a single intersection to recover a parameter', 'Let $f(x)=x^2-2x+3$ and $g(x)=2x+k$ for all real $x$.', [
+    select(domain, 'Use completing the square to choose the range of $f$.', '$f(x)\\ge2$', ['$f(x)>2$', '$f(x)\\ge3$', '$f(x)\\le2$'], '$f(x)=(x-1)^2+2$, so the minimum is attained at $x=1$.', 'The new constant is 2 after completing the square.'),
+    number(compose, 'The graphs $y=g^{-1}f(x)$ and $y=g(x)$ meet once. Find the horizontal coordinate of the intersection.', 3, 'Applying $g$ to both sides gives $f(x)=gg(x)=4x+3k$. The resulting quadratic is $(x-3)^2-6-3k=0$. A single root occurs at $x=3$ when the constant outside the square is zero.', 'One common point requires one real solution of the intersection equation.'),
+    number(compose, 'Find the vertical coordinate of the intersection.', 4, 'The repeated-root condition gives $-6-3k=0$, hence $k=-2$. Substitute $x=3$ into $g(x)=2x-2$ to get 4.', 'Use the equation of the line after finding the parameter.'),
+  ]),
+  exercise(49, 'Turn a maximum into a minimum and restrict the graph', 'Let $f(x)=-3x^2+6x+2$ for real $x$. Let $g$ have the same formula for $x\\le0$.', [
+    select(square, 'Choose the vertex form of $f$ and its range.', '$5-3(x-1)^2,\\ f(x)\\le5$', ['$5-3(x+1)^2,\\ f(x)\\le5$', '$5-3(x-1)^2,\\ f(x)\\ge5$', '$2-3(x-1)^2,\\ f(x)\\le2$'], '$-3(x^2-2x)+2=-3[(x-1)^2-1]+2$.', 'The graph opens downwards.'),
+    select(transform, 'Which axis should you reflect in to turn the maximum into a minimum?', 'The $x$-axis', ['The $y$-axis', 'The line $y=x$', 'The line $y=-x$'], 'Negating $f(x)$ reverses vertical order, moving the vertex to $(1,-5)$.', 'A horizontal reflection does not reverse vertical order.'),
+    vector('After reflection, enter the translation vector that puts the vertex at the origin.', [-1,5], 'Move the vertex $(1,-5)$ to $(0,0)$ using $\\binom{-1}{5}$.'),
+    select(inverse, 'Describe the restricted graph and its inverse. Which inverse formula is correct?', '$g$ increases to $(0,2)$; $g^{-1}(x)=1-\\sqrt{(5-x)/3}$.', ['$g$ decreases to $(0,2)$; $g^{-1}(x)=1-\\sqrt{(5-x)/3}$.', '$g$ increases to $(0,2)$; $g^{-1}(x)=1+\\sqrt{(5-x)/3}$.', '$g$ increases to $(0,2)$; $g^{-1}(x)=1-\\sqrt{(x-5)/3}$.'], 'The left branch is strictly increasing, so it is one-to-one. Reflect it in $y=x$ to sketch the inverse with endpoint $(2,0)$. When solving $x=5-3(t-1)^2$, use $t-1<0$.', 'Choose the root on the restricted branch.'),
+  ]),
+  exercise(50, 'Reflect a fractional linear graph before composing', 'Let $f(x)=4+6/(x-2)$ for $x>2$ and $g(x)=2x+1$ on $\\mathbb R$.', [
+    number(inverse, 'Find $f^{-1}(6)$.', 5, '$f(t)=6$ implies $6/(t-2)=2$ and $t=5$.', 'Inverse notation asks for the input that gives output 6.'),
+    select(inverse, 'Choose the asymptotes of the inverse sketch.', '$x=4$ and $y=2$', ['$x=2$ and $y=4$', '$x=-4$ and $y=-2$', '$x=4$ and $y=-2$'], 'Reflect the original asymptotes $y=4$ and $x=2$ in $y=x$. Reflect $(5,6)$ to plot $(6,5)$ on the branch with $x>4$, $y>2$.', 'Reflect the asymptotes as well as the plotted points.'),
+    select(inverse, 'Choose the inverse and its domain.', '$2+6/(x-4),\\ x>4$', ['$4+6/(x-2),\\ x>2$', '$2+6/(x-4),\\ x\\ne4$', '$2-6/(x-4),\\ x>4$'], 'Solve $x=4+6/(t-2)$. The original range is $(4,\\infty)$.', 'Use all of the original domain restriction to find the inverse domain.'),
+    number(compose, 'Solve $fg(x)=f(7)$.', 3, 'Since $f$ is one-to-one, $g(x)=7$; solve $2x+1=7$. The inner output 7 is admissible.', 'Equal outputs imply equal inputs because $f$ is injective.'),
+  ]),
+  exercise(51, 'Recover three transformations from graph landmarks', 'A broken-line graph is formed by joining $(-2,1)$, $(0,0)$, $(3,2)$ on $y=f(x)$. A transformed graph joins $(-5,6)$, $(-2,0)$, $(0,3)$. Use a reflection in the $y$-axis, then a horizontal translation, then a vertical stretch.', [
+    select(transform, 'Choose the axis of reflection.', 'The $y$-axis', ['The $x$-axis', 'The line $y=x$', 'The line $y=-x$'], 'The point at height 2 moves from the right of the zero-output point to its left. The reflection reverses horizontal order and preserves the signs of outputs.', 'A reflection in the horizontal axis reverses the signs of outputs.'),
+    vector('Enter the translation after reflecting.', [-2,0], 'Reflection keeps $(0,0)$ fixed. Next move it to $(-2,0)$ by $\\binom{-2}{0}$.'),
+    number(transform, 'Find the scale factor of the stretch parallel to the $y$-axis.', 3, 'The original output 2 now gives 6, and 1 now gives 3.', 'Use the ratio of the corresponding vertical coordinates.'),
+    select(transform, 'Choose the transformed function.', '$3f(-x-2)$', ['$3f(-x+2)$', '$3f(x+2)$', '$f(-3x-2)$'], 'Reflection gives $f(-x)$. Translation left by 2 gives $f(-(x+2))$. Finally multiply the output by 3.', 'Apply the horizontal shift to the entire reflected expression.'),
+  ]),
+  exercise(52, 'Find the inverse at the least one-to-one cutoff', 'Let $f(x)=2x^2-12x+22$ for $x\\ge k$.', [
+    select(square, 'Choose the completed-square form.', '$2(x-3)^2+4$', ['$2(x-3)^2+22$', '$2(x+3)^2+4$', '$2(x-6)^2+4$'], '$2(x-3)^2=2x^2-12x+18$. Add 4.', 'Halve the linear coefficient after factoring out 2.'),
+    number(domain, 'Find the least $k$ for which $f$ has an inverse.', 3, 'The graph increases to the right of its vertex at $x=3$. A smaller cutoff would include points on both branches with equal outputs.', 'Use the vertex input as the boundary.'),
+    select(inverse, 'With that $k$, choose $f^{-1}(x)$.', '$3+\\sqrt{(x-4)/2}$', ['$3-\\sqrt{(x-4)/2}$', '$-3+\\sqrt{(x-4)/2}$', '$3+\\sqrt{x-4}/2$'], 'Solve $2(t-3)^2=x-4$ with $t-3\\ge0$.', 'Take the square root of the entire quotient.'),
+    number(compose, 'With the same $k$, solve $ff(x)=22$.', 4, 'Apply the inverse twice. First $f(x)=6$, then $x=4$. Both intermediate inputs are in the original domain.', 'Undo each application of $f$ separately.'),
+  ]),
+  exercise(53, 'Connect parameters through a transformed composite', 'Let $f(x)=2x^2-c$, $g(x)=3x+k$, with $c,k>0$. It is given that $g(c)=2k+5$.', [
+    select(compose, 'Find the resulting formula for $gf(x)$.', '$6x^2-5$', ['$6x^2+5$', '$6x^2-k-5$', '$6x^2+k+5$'], '$3c+k=2k+5$ gives $3c=k+5$. Substitute into $gf(x)=6x^2-3c+k$.', 'Use the relation to eliminate $c$.'),
+    select(transform, 'Translate $y=gf(x)$ by $\\binom{-1}{2}$, stretch vertically by factor $k$, then reflect in the $x$-axis. Find the new formula $h(x)$.', '$-6k(x+1)^2+3k$', ['$-6k(x-1)^2+3k$', '$-6k(x+1)^2-3k$', '$-6k(x+1)^2+5k+2$'], 'The translation gives $6(x+1)^2-3$. Scaling by $k$ and negating gives the result.', 'The vertical shift is scaled and then reflected along with the rest of the expression.'),
+    select(domain, 'If the maximum of $h$ is 12, find $k$ and $c$.', '$k=4,\\ c=3$', ['$k=4,\\ c=9$', '$k=3,\\ c=4$', '$k=12,\\ c=3$'], '$3k=12$ gives $k=4$. Then $3c=k+5=9$.', 'Use the vertex output of the translated and scaled graph.'),
+  ]),
+  exercise(54, 'Transform a square-root graph and reverse it', 'Let $f(x)=\\sqrt{x}$ for $x\\ge0$ and $g(x)=4f(x-3)-2$ for $x\\ge3$. Let $h(x)=x-1$ for $x\\ge4$.', [
+    number(transform, 'If the first operation is a vertical stretch, find its scale factor.', 4, 'Multiply the output of the square-root function by 4.', 'The stretch acts on $y$, not on $x$.'),
+    vector('Enter the translation vector that follows the stretch.', [3,-2], 'The start of the graph moves from $(0,0)$ to $(3,-2)$ by $\\binom{3}{-2}$.'),
+    select(inverse, 'Choose the mirror line and endpoint of the inverse sketch.', '$y=x$ and $(-2,3)$', ['$y=x$ and $(3,-2)$', '$y=-x$ and $(-2,3)$', '$y=x$ and $(2,3)$'], 'Swap the coordinates of $(3,-2)$ across $y=x$. The inverse rises to the right from $(-2,3)$, following the right-hand branch of a parabola.', 'The inverse graph swaps the endpoint coordinates.'),
+    select(inverse, 'Choose the inverse formula.', '$3+(x+2)^2/16$', ['$3+(x-2)^2/16$', '$3+(x+2)^2/4$', '$3+\\sqrt{x+2}/4$'], 'For $x\\ge-2$, rearrange $(x+2)/4=\\sqrt{t-3}$ and square.', 'Squaring the factor 4 gives 16.'),
+    select(domain, 'Choose the range of $g^{-1}$.', '$g^{-1}(x)\\ge3$', ['$g^{-1}(x)\\ge-2$', '$g^{-1}(x)>3$', '$g^{-1}(x)\\le3$'], 'The inverse range is the original domain, including the endpoint 3.', 'The inverse domain and range are different.'),
+    number(compose, 'Find $g^{-1}h(7)$.', 7, '$h(7)=6$ and $g^{-1}(6)=3+64/16=7$.', 'The inverse is the outer function.'),
+    select(domain, 'Why is $hg^{-1}$ undefined on part of the domain of $g^{-1}$?', '$g^{-1}(-2)=3$, but $h$ requires inputs at least 4.', ['$g^{-1}$ cannot take negative inputs.', '$h$ requires inputs less than 3.', '$g^{-1}$ has no value at $-2$.'], 'The range of $g^{-1}$ contains 3, which is outside the domain of $h$.', 'An endpoint in the inner range can invalidate the full composition.'),
+  ]),
+  exercise(55, 'Read a vertical stretch and shift from matching points', 'A graph is transformed by a vertical stretch followed by a vertical translation. The points $(-2,1)$ and $(4,4)$ become $(-2,-5)$ and $(4,4)$ respectively.', [
+    number(transform, 'Find the scale factor of the stretch.', 3, 'The difference of the outputs changes from $4-1=3$ to $4-(-5)=9$. Thus the scale factor is 3.', 'Compare differences because the translation alters both output values equally.'),
+    vector('Enter the translation vector for the second operation.', [0,-8], 'After stretching, the output 1 becomes 3. To reach $-5$, add $-8$. The vector is $\\binom{0}{-8}$.'),
+  ]),
+  exercise(56, 'Reverse the order to invert a composite', 'Let $f(x)=x^2+8x+12$ for $x\\le-4$ and $g(x)=2-x$ for $x\\ge-4$.', [
+    select(square, 'Choose the completed-square form.', '$(x+4)^2-4$', ['$(x+4)^2+12$', '$(x-4)^2-4$', '$(x+8)^2-4$'], 'Subtract 16 after forming $(x+4)^2$.', 'The constant outside the square compensates for the square of 4.'),
+    select(inverse, 'Choose $f^{-1}(x)$.', '$-4-\\sqrt{x+4}$', ['$-4+\\sqrt{x+4}$', '$4-\\sqrt{x+4}$', '$-4-\\sqrt{x-4}$'], 'Since $t\\le-4$, use the negative root of $(t+4)^2=x+4$.', 'The inverse returns inputs on the left branch.'),
+    select(compose, 'Choose $(gf)^{-1}(x)$.', '$-4-\\sqrt{6-x}$', ['$6+\\sqrt{x+4}$', '$-4+\\sqrt{6-x}$', '$-4-\\sqrt{x+6}$'], 'The range of $f$ fits into the domain of $g$. Invert in reverse order using $g^{-1}(x)=2-x$, then apply $f^{-1}$, for $x\\le6$.', 'The inverse of a composition reverses the order.'),
+  ]),
+  exercise(57, 'Find a quadratic parameter from a range or a nested value', 'Let $f(x)=x^2+2ax+a$ and define $g$ by $(g(x))^3=19x/2+8$, both on $\\mathbb R$.', [
+    select(domain, 'If the minimum value of $f$ is $-6$, find the possible values of $a$.', '$a=-2\\text{ or }a=3$', ['$a=2\\text{ or }a=-3$', '$a=-6\\text{ or }a=1$', '$a=3\\text{ only}$'], '$f(x)=(x+a)^2+a-a^2$. Equating the minimum to $-6$ gives $(a-3)(a+2)=0$.', 'The minimum includes both the original constant and the square correction.'),
+    number(compose, 'Instead, if $fgg(0)=37$, find $a$.', 4, '$g(0)=2$ and $g(2)=3$, so $f(3)=9+7a=37$.', 'Evaluate the two applications of $g$ from the inside out.'),
+  ]),
+  exercise(58, 'Complete the square before reflecting and translating', 'Map $y=x^2$ to $y=-x^2+8x-14$ using a reflection followed by a translation.', [
+    select(square, 'Choose the completed-square form.', '$-(x-4)^2+2$', ['$-(x+4)^2+2$', '$-(x-4)^2-14$', '$-(x-4)^2-2$'], 'Expanding $-(x-4)^2$ gives $-x^2+8x-16$, so add 2.', 'Keep the negative sign in front of the entire square.'),
+    select(transform, 'Choose the reflection.', 'Reflection in the $x$-axis', ['Reflection in the $y$-axis', 'Reflection in $y=x$', 'Reflection in $y=-x$'], 'Reflection in the $x$-axis changes $y=x^2$ to $y=-x^2$.', 'Change the sign of the output.'),
+    vector('Enter the translation vector that follows the reflection.', [4,2], 'Move the maximum from $(0,0)$ to $(4,2)$ using $\\binom{4}{2}$.'),
+  ]),
+  exercise(59, 'Invert an increasing quadratic with a nonvertex endpoint', 'Let $f(x)=2(x+3)^2-5$ for $x\\ge0$ and $g(x)=3x-4$ on $\\mathbb R$.', [
+    select(domain, 'Choose the range of $f$.', '$f(x)\\ge13$', ['$f(x)>13$', '$f(x)\\ge-5$', '$f(x)\\le13$'], 'The restricted graph increases from $f(0)=13$.', 'The unrestricted vertex is outside the domain.'),
+    select(inverse, 'Choose $f^{-1}(x)$.', '$-3+\\sqrt{(x+5)/2}$', ['$-3-\\sqrt{(x+5)/2}$', '$3+\\sqrt{(x+5)/2}$', '$-3+\\sqrt{(x-5)/2}$'], 'Solve $2(t+3)^2=x+5$ with $t+3>0$.', 'Choose the root that can give $t\\ge0$.'),
+    number(compose, 'Solve $gf(x)=131$.', 2, '$f(x)=45$ gives $(x+3)^2=25$. Keep $x=2$ because $x\\ge0$.', 'Apply the inverse of the outer function first.'),
+  ]),
+  exercise(60, 'Distinguish input scaling from output scaling', 'Consider two unrelated functions $f$ and $g$.', [
+    number(transform, 'For $y=f(5x)-7$, enter the scale factor parallel to the $x$-axis.', 1/5, 'The same original input $u$ is reached at $x=u/5$.', 'Use the reciprocal of the coefficient inside the function.'),
+    vector('Enter the translation vector in $y=f(5x)-7$.', [0,-7], 'A reduction of 7 in the output gives $\\binom{0}{-7}$.'),
+    select(transform, 'Stretch $y=g(x)$ parallel to the $y$-axis by factor 4, then reflect in the $y$-axis. Choose the result.', '$y=4g(-x)$', ['$y=-4g(x)$', '$y=g(-4x)$', '$y=-g(x)/4$'], 'The stretch multiplies outputs by 4, then the reflection switches the sign of the input.', 'Reflection in the $y$-axis changes $x$, not $y$.'),
+  ]),
+  exercise(61, 'Use cubic landmarks to recover a transformation', 'A vertical stretch followed by a translation maps $y=x^3$ to $y=f(x)$. The landmarks $(0,0)$ and $(1,1)$ become $(-2,5)$ and $(-1,8)$.', [
+    number(transform, 'Find the scale factor of the vertical stretch.', 3, 'The output difference increases from 1 to 3.', 'Compare differences to remove the effect of the shift.'),
+    vector('Enter the translation vector after the stretch.', [-2,5], 'The stretched origin stays at $(0,0)$ and moves to $(-2,5)$ by $\\binom{-2}{5}$.'),
+    select(transform, 'Choose $f(x)$ in the form $a(x+b)^3+c$.', '$3(x+2)^3+5$', ['$3(x-2)^3+5$', '$3(x+2)^3-5$', '$(3x+2)^3+5$'], 'Start with $3x^3$. Substitute $x+2$ and add 5.', 'A leftward shift adds to the original input.'),
+  ]),
+  exercise(62, 'Find when a reciprocal function equals its own inverse', 'Let $g(x)=2+12/(ax-4)$ for $x>4/a$, where $a>0$.', [
+    select(inverse, 'Choose $g^{-1}(x)$ for $x>2$.', '$4/a+12/[a(x-2)]$', ['$2+12/(ax-4)$', '$4/a-12/[a(x-2)]$', '$4/a+12/[a(x+2)]$'], 'From $x-2=12/(at-4)$, obtain $at-4=12/(x-2)$ and divide by $a$.', 'Isolate the full denominator before solving for the input.'),
+    select(inverse, 'Which statement verifies that $g^{-1}=g$ when $a=2$?', 'Both are $2+6/(x-2)$ on $x>2$.', ['Both are $2+6/(x-2)$ on all real inputs.', 'Both are $2-6/(x-2)$ on $x>2$.', 'The formulas coincide but the domains are disjoint.'], 'At $a=2$, the original denominator is $2(x-2)$ and the original domain is $x>2$. Both match the inverse.', 'Equality of functions requires equal formulas on the same domain.'),
+  ]),
+  exercise(63, 'Compose a fractional function with its scaled inverse', 'Let $f(x)=2+8/(x-3)$ for $x>3$.', [
+    number(inverse, 'Given $f(a)=6$, find $a$.', 5, '$8/(a-3)=4$ gives $a-3=2$.', 'Solve for the denominator before adding 3.'),
+    select(inverse, 'Choose the inverse and its domain.', '$3+8/(x-2),\\ x>2$', ['$3-8/(x-2),\\ x>2$', '$3+8/(x-2),\\ x>3$', '$2+8/(x-3),\\ x>3$'], 'Solve $x-2=8/(t-3)$. The original range is $(2,\\infty)$.', 'The inverse domain comes from the range, not from the original denominator restriction.'),
+    number(compose, 'Let $g(x)=3+8/(4x-2)$ for $x>1/2$. If $fg(x)=kx$ for every allowed input, find $k$.', 4, 'Here $g(x)>3$ and $8/(g(x)-3)=4x-2$. Adding 2 gives $fg(x)=4x$.', 'The reciprocal cancels the full inner denominator.'),
+  ]),
 ]
