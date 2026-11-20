@@ -48,11 +48,35 @@ main{padding:clamp(30px,6vw,76px) 0;min-height:70vh}h1,h2{font-family:Georgia,'S
 .sign-graph{display:block;width:min(100%,400px);height:auto;margin-top:12px;background:#fffdf6;border-radius:8px}
 
 
-.foundation-entry{margin:16px 0 24px}
 .foundation-practice{max-width:760px}
-.foundation-guide{margin-bottom:16px}
-.foundation-picker{max-width:180px;margin-bottom:16px}
 .foundation-practice .question{margin:0}
 .attempt-meta{font-size:.9rem;color:var(--quiet)}
 .worked-solution{margin-top:14px}
 .foundation-practice .katex{white-space:normal}
+
+.chapter-directory{max-width:900px}
+.chapter-list{display:grid;gap:10px;list-style:none;margin:0 0 20px;padding:0}
+.chapter-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 16px;padding:14px 18px}
+.chapter-row>a,.section-info>a{font-weight:700}
+.chapter-functions{display:flex;gap:8px 16px;flex-wrap:wrap}
+.section-number{color:var(--quiet);font-variant-numeric:tabular-nums}
+.section-info{flex:1;min-width:0}
+.section-info p{margin:4px 0 0}
+.question-numbers{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 22px}
+.question-numbers button,.section-navigation button{min-height:44px}
+.question-numbers button{min-width:44px;font-variant-numeric:tabular-nums}
+.question-numbers button[aria-current]{background:var(--ink);color:white;border-color:var(--ink)}
+.section-navigation button:disabled{opacity:.5;cursor:default}
+.question-skill{font-size:1.2rem;margin:0 0 12px}
+.foundation-reference{margin:0 0 16px}
+.foundation-reference summary{cursor:pointer}
+.foundation-practice .question{min-width:0}
+.solution-body{margin:10px 0 0;min-width:0}
+.solution-math{max-width:100%;overflow-x:auto;padding:4px 0}
+.solution-math .katex-display{margin:.5em 0;text-align:left}
+.solution-math .katex-display>.katex{text-align:left;white-space:nowrap}
+@media(max-width:480px){
+  .foundation-practice .question{padding:16px}
+  .solution-math .katex{font-size:1.02em}
+  .question-numbers{gap:6px}
+}

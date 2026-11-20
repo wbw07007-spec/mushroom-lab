@@ -4,6 +4,7 @@ export type Answer = { type: 'single' | 'multiple'; choices: string[]; correct: 
 export type Task = {
   id: string; skill: string; difficulty: 'foundation' | 'standard'; prompt: string;
   answer: Answer; solution: string; misconception: string;
+  solutionLines?: string[]
   signGraph?: { roots: [number, number]; labels: [string, string]; variable: string; quantity?: string; region: 'inside' | 'outside' };
 }
 export type Exercise = { id: string; title: string; context?: string; tasks: Task[] }
@@ -185,4 +186,3 @@ export const glossary: Record<string, string> = {
   'reflected': '反射。图像关于指定轴或直线作镜像变换。',
   'real': '实数。',
 }
-

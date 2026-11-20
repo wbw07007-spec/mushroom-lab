@@ -10,8 +10,8 @@ import { applicationsPractice } from './applications-practice.ts'
 import { integrationPractice } from './integration-practice.ts'
 
 export const practiceTopics = [
-  { id: 'practice', title: [bank.topic, '函数与图像变换'], exercises: bank.exercises },
-  { id: 'quadratics', title: ['Quadratics', '二次函数与方程'], exercises: quadratics },
+  { id: 'functions-foundation', title: [bank.topic, '函数与图像变换'], exercises: bank.exercises },
+  { id: 'quadratics-consolidation', title: ['Chapter 1 Consolidation', '第一章巩固'], exercises: quadratics },
   { id: 'functions-companions', title: ['Functions: Exam-style Practice', '函数真题同类练习'], exercises: functionsCompanions },
   { id: 'coordinate-geometry', title: ['Coordinate Geometry', '坐标几何'], exercises: coordinateGeometry },
   { id: 'circular-measure', title: ['Circular Measure', '弧度制'], exercises: circularPractice },
