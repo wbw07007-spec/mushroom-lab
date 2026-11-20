@@ -47,3 +47,12 @@ main{padding:clamp(30px,6vw,76px) 0;min-height:70vh}h1,h2{font-family:Georgia,'S
 
 .sign-graph{display:block;width:min(100%,400px);height:auto;margin-top:12px;background:#fffdf6;border-radius:8px}
 
+
+.foundation-entry{margin:16px 0 24px}
+.foundation-practice{max-width:760px}
+.foundation-guide{margin-bottom:16px}
+.foundation-picker{max-width:180px;margin-bottom:16px}
+.foundation-practice .question{margin:0}
+.attempt-meta{font-size:.9rem;color:var(--quiet)}
+.worked-solution{margin-top:14px}
+.foundation-practice .katex{white-space:normal}

@@ -173,6 +173,9 @@ export const bank = {
 }
 
 export const glossary: Record<string, string> = {
+  'standard form': '标准形式。这里指二次方程形如 ax² + bx + c = 0。',
+  'constant': '常数项，不含未知数的项。保留它的正负号。',
+  'subtract': '减去。等式两边应减去同一个量或式子。',
   'column vector': '列向量。平移向量上方写水平位移，下方写竖直位移。',
   'translation vector': '平移向量。每个分量表示对应坐标的改变量。',
   'corresponding point': '对应点。对原图上的点应用同一组变换后得到的点。',

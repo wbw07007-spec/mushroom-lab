@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import katex from 'katex'
@@ -13,6 +13,9 @@ import { bank, glossary } from './content/questions'
 import { practiceTopics } from './content/practice-topics'
 import type { Exercise, Task } from './content/questions'
 import { grade } from './grading'
+import { applyAttempt, completionMethod, emptyHistory, readHistory, writeHistory } from './attempt-history'
+import type { AttemptEvent } from './attempt-history'
+import { standardFormRoute, standardFormTasks } from './content/quadratics-foundation'
 
 const pages = [
   ['home', 'Home', '首页'], ['academy', 'Academy', '课程'],
@@ -86,7 +89,7 @@ function App() {
     <header><div className="nav">
       <a className="brand" href="#home"><img className="logo" src={mushroomMark} alt="" width="40" height="40" /><span>Mushroom Lab</span></a>
       <nav aria-label={t('Main navigation', '主导航')}>{pages.map(([id,en,cn]) =>
-        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && practiceTopic) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
+        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && (practiceTopic || page === standardFormRoute)) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
       <button className="language" onClick={() => setZh(!zh)} lang={zh ? 'en' : 'zh-CN'}>{zh ? 'English' : '中文'}</button>
     </div></header>
     <main>
@@ -95,7 +98,7 @@ function App() {
         <div><p className="eyebrow">{t('Independent mathematics education', '国际课程数学学习平台')}</p>
         <h1>{t('Explore Mathematics Differently.', '用不同的方式探索数学。')}</h1>
         <p>{t('Explore international mathematics through guided practice, worked solutions and teaching resources by Bowen Wei.', '跟随 Bowen Wei 的分步练习、完整解析与教学资源，探索国际课程数学。')}</p>
-        <div className="actions"><a className="button" href="#practice">{t('Start P1 practice', '开始 P1 练习')} →</a><a href="#academy">{t('Browse courses', '浏览课程')}</a></div></div>
+        <div className="actions"><a className="button" href="#practice">{t('Start P1 practice', '开始 P1 练习')} →</a><a href="#quadratics">{t('Chapter 1 · Quadratics', '第一章 · 二次函数与方程')}</a><a href="#academy">{t('Browse courses', '浏览课程')}</a></div></div>
         <div className="plot" aria-hidden="true"><div className="plot-label">P1 / FUNCTIONS</div><div className="curves"><i></i><i></i></div><div className="formula">f(x) → f(x − 3)</div></div>
       </section>
       <section className="cards">{[['academy','Academy','课程中心','Explore the international mathematics curriculum.','查看国际课程数学目录。'],['library','Resource Library','资源库','Review transformation rules and worked examples.','复习图像变换规则与例题。'],['about','Academic Portfolio','学术主页','Meet Bowen Wei, the teacher behind Mushroom Lab.','了解 Mushroom Lab 创办人 Bowen Wei。']].map(([id,en,cn,desc,cd]) =>
@@ -137,12 +140,13 @@ function App() {
       </section>
     </>}
     {page === 'about' && <><p className="eyebrow">{t('Academic Portfolio','学术主页')}</p><h1>Bowen Wei</h1><article className="card reading"><h2>{t('Education','教育背景')}</h2><p>University of Manchester · Mathematics with Financial Mathematics</p><h2>{t('Teaching & curriculum','教学与课程开发')}</h2><p>{t('International mathematics teaching, curriculum development and mathematics teaching leadership.', '国际课程数学教学、课程开发与数学教研管理。')}</p></article></>}
+    {page === standardFormRoute && <StandardFormPractice t={t} />}
     {practiceTopic && <Practice key={practiceTopic.id} topicId={practiceTopic.id} t={t} progress={progress} complete={complete}
       exercises={practiceTopic.exercises} topicTasks={practiceTopic.tasks} title={t(practiceTopic.title[0], practiceTopic.title[1])} />}
     {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
       <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
-    {page !== 'teacher' && page !== 'past-papers' && !practiceTopic && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
+    {page !== 'teacher' && page !== 'past-papers' && page !== standardFormRoute && !practiceTopic && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
     </main>
     <footer><strong>Mushroom Lab</strong><a href="#teacher">{t('Question Builder','教师题目编辑器')}</a><span>{t('Explore Mathematics Differently.','蘑菇数学实验室')}</span></footer>
   </>
@@ -167,6 +171,12 @@ function Practice({ t, progress, complete, exercises, topicTasks, title, topicId
         </select>
       </label>
     </div>
+    {topicId === 'quadratics' && <section className="card foundation-entry">
+      <p className="eyebrow">{t('Chapter 1 · Lesson 1.1', '第一章 · 第 1.1 节')}</p>
+      <h2>{t('Solving quadratics by factorisation', '用因式分解解二次方程')}</h2>
+      <a href={'#'+standardFormRoute}>{t('Foundation · Standard form: find the constant', '基础练习 · 化为标准形式：确定常数项')}</a>
+    </section>}
+    {topicId === 'quadratics' && <h2>{t('Chapter consolidation · Exam-style questions', '章节巩固 · 真题同类练习')}</h2>}
     <div className="practice-layout">
       <aside className="card"><p>{t('Progress','学习进度')} · {completedCount}/{topicTasks.length}</p>
       <progress aria-label={t('Progress','学习进度')} value={completedCount} max={topicTasks.length} />
@@ -182,32 +192,61 @@ function Practice({ t, progress, complete, exercises, topicTasks, title, topicId
       </label></aside>
       <Question key={task.id} task={task} context={exercise.context} step={exercise.tasks.length > 1 ? (index-exerciseStart+1) + '/' + exercise.tasks.length : undefined}
         diagram={exercise.id === 'p1-cg-07' && <ChordOfContactDiagram label={t('Two tangents from T touch the circle at A and B. C is the centre.', '从圆外点 T 引两条切线，切点为 A 和 B，圆心为 C。')} />}
-        t={t} onCorrect={() => complete(task.id)} previous={index > 0 ? () => setIndex(index-1) : undefined}
+        t={t} track legacyCompleted={progress.includes(task.id)} onCorrect={() => complete(task.id)} previous={index > 0 ? () => setIndex(index-1) : undefined}
         next={index < topicTasks.length-1 ? () => setIndex(index+1) : undefined} />
     </div>
     <p className="muted">{t('Progress measures completed practice tasks. Cambridge exam grades use separate assessment criteria.','进度记录已完成的练习任务。Cambridge 考试使用独立的评分标准。')}</p>
   </>
 }
 
-function Question({ task, context, step, diagram, t, onCorrect, previous, next }: {
+function Question({ task, context, step, diagram, t, onCorrect, previous, next, track = false, legacyCompleted = false, hint, commonMistake }: {
   task: typeof tasks[number]; context?: string; step?: string; diagram?: ReactNode; t: PracticeProps['t'];
   onCorrect: () => void; previous?: () => void; next?: () => void
+  track?: boolean; legacyCompleted?: boolean; hint?: string; commonMistake?: { answer: number; hint: string }
 }) {
   const [response, setResponse] = useState<number[]>([])
+  const formInput = useRef<HTMLInputElement>(null)
   const [number, setNumber] = useState('')
   const [vector, setVector] = useState<[string, string]>(['', ''])
   const [feedback, setFeedback] = useState<'ready'|'correct'|'retry'|'missing'>('ready')
+  const [history, setHistory] = useState(() => track ? readHistory(browserStorage, task.id) : emptyHistory)
+  const [hintText, setHintText] = useState('')
+  const [solutionOpen, setSolutionOpen] = useState(false)
+  const method = completionMethod(history, legacyCompleted)
   const answer = task.answer
+
+  function remember(event: AttemptEvent) {
+    if (!track) return
+    const nextHistory = applyAttempt(history, event)
+    setHistory(nextHistory)
+    writeHistory(browserStorage, task.id, nextHistory)
+  }
+
+  function showHint() {
+    const matchesMistake = commonMistake && grade({ type: 'number', correct: commonMistake.answer }, number)
+    setHintText(matchesMistake ? commonMistake.hint : hint ?? task.misconception)
+    remember('hint')
+  }
+
+  function toggleSolution() {
+    if (!solutionOpen) remember('solution')
+    setSolutionOpen(!solutionOpen)
+  }
   function submit(event: FormEvent) {
     event.preventDefault()
     const result = grade(answer, answer.type === 'vector' ? vector : answer.type === 'number' ? number : response)
     setFeedback(result === null ? 'missing' : result ? 'correct' : 'retry')
+    if (result !== null) remember(result ? 'correct' : 'incorrect')
     if (result) onCorrect()
   }
   return <article className="card question">
     <p className="eyebrow">{step ? t('Guided practice · Step ', '分步练习 · 步骤 ') + step : t('Guided practice','引导练习')}</p>
     {context && <p><MathText value={context} translate /></p>}
     {diagram}
+    {track && <p className="attempt-meta">
+      {method && <strong>{t(completionLabels[method][0], completionLabels[method][1])} · </strong>}
+      {t('Valid attempts', '有效尝试')} {history.attempts}
+    </p>}
     <form onSubmit={submit}><fieldset><legend><MathText value={task.prompt} translate /></legend>
       {answer.type === 'vector'
         ? <div className="vector-entry">
@@ -218,7 +257,7 @@ function Question({ task, context, step, diagram, t, onCorrect, previous, next }
             </div>
           </div>
         : answer.type === 'number'
-        ? <label className="numeric">{t('Enter a number or fraction','输入数值或分数')}<input value={number} onChange={event => {setNumber(event.target.value); setFeedback('ready')}} /></label>
+        ? <label className="numeric">{t('Enter a number or fraction','输入数值或分数')}<input ref={formInput} autoComplete="off" value={number} onChange={event => {setNumber(event.target.value); setFeedback('ready')}} /></label>
         : answer.choices.map((choice, i) => <label className="choice" key={choice}>
             <input name="answer" type={answer.type === 'single' ? 'radio' : 'checkbox'} checked={response.includes(i)}
               onChange={event => {setFeedback('ready'); setResponse(answer.type === 'single' ? [i] : event.target.checked ? [...response,i] : response.filter(value => value !== i))}} />
@@ -229,12 +268,81 @@ function Question({ task, context, step, diagram, t, onCorrect, previous, next }
         {next && <button type="button" onClick={next}>{t('Next','下一步')} →</button>}</div>
     </form>
     <div aria-live="polite">{feedback === 'correct' && <div className="feedback"><strong>{t('Correct','回答正确')}</strong><p><MathText value={task.solution} /></p>{task.signGraph && <SignGraph graph={task.signGraph} />}</div>}
-    {feedback === 'retry' && <p className="feedback retry"><strong>{t('Try again','再试一次')}</strong> · {task.misconception}</p>}
+    {feedback === 'retry' && <div className="feedback retry"><strong>{t('Try again','再试一次')}</strong>
+      {track
+        ? <div className="actions">
+            <button type="button" onClick={() => { setFeedback('ready'); setHintText(''); formInput.current?.focus() }}>{t('Retry without help', '自行订正')}</button>
+            <button type="button" onClick={showHint}>{t('Show hint', '看提示')}</button>
+          </div>
+        : <> · {task.misconception}</>}
+      {hintText && <p><MathText value={hintText} /></p>}
+    </div>}
     {feedback === 'missing' && <p className="feedback retry">{answer.type === 'vector'
       ? t('Enter a valid number in both rows of the column vector.','请在列向量的上下两行分别输入有效数值。')
       : t('Enter a valid answer or select an option.','请输入有效答案或选择选项。')}</p>}</div>
-    {feedback !== 'correct' && <details><summary>{t('Worked solution','完整解析')}</summary><p><MathText value={task.solution} /></p>{task.signGraph && <SignGraph graph={task.signGraph} />}</details>}
+    {feedback !== 'correct' && <div className="worked-solution">
+      <button type="button" aria-expanded={solutionOpen} onClick={toggleSolution}>{solutionOpen ? t('Hide worked solution', '收起完整解析') : t('Show worked solution', '查看完整解析')}</button>
+      {solutionOpen && <div><p><MathText value={task.solution} /></p>{task.signGraph && <SignGraph graph={task.signGraph} />}</div>}
+    </div>}
   </article>
+}
+
+const browserStorage = {
+  getItem: (key: string) => window.localStorage.getItem(key),
+  setItem: (key: string, value: string) => window.localStorage.setItem(key, value),
+}
+
+const completionLabels = {
+  first: ['Correct independently on first attempt', '首次独立答对'],
+  retried: ['Correct independently after a retry', '重试后独立答对'],
+  assisted: ['Correct after using help', '借助帮助后答对'],
+  legacy: ['Completed · method unknown', '已完成，作答方式未知'],
+} as const
+
+function StandardFormPractice({ t }: Pick<PracticeProps, 't'>) {
+  const [index, setIndex] = useState<number | null>(null)
+  const [completed, setCompleted] = useState(() => standardFormTasks.map(({ task }) =>
+    readHistory(browserStorage, task.id).completed))
+  const active = index === null ? null : standardFormTasks[index]
+  const count = completed.filter(Boolean).length
+
+  return <section className="foundation-practice">
+    <div className="practice-heading">
+      <a href="#quadratics">{t('Chapter 1 · Quadratics', '第一章 · 二次函数与方程')}</a>
+      <p className="eyebrow">{t('Lesson 1.1 · Solving quadratics by factorisation', '第 1.1 节 · 用因式分解解二次方程')}</p>
+      <h1 className="practice-title">{t('Standard form: find the constant', '化为标准形式：确定常数项')}</h1>
+    </div>
+    <article className="card reading foundation-guide">
+      <p><strong>{t('Learning goal', '学习目标')}</strong> <MathText translate value={t(
+        'Find the signed constant after writing a quadratic equation with zero on the right.',
+        '把二次方程右边化为零后，确定左边常数项的值及其符号。')} /></p>
+      <p><strong>{t('Rule', '规则')}</strong> <MathText translate value={t(
+        'Subtract the entire right-hand side from both sides. The new constant is the left constant minus the right constant.',
+        '两边同时减去右边的整个式子。新的常数项等于左边的常数项减去右边的常数项。')} /></p>
+      <p><strong>{t('Example', '例题')}</strong> <MathText translate value={t(
+        'In $x^2+2x-3=4$, subtract 4 from both sides to get $x^2+2x-7=0$. The constant is $-7$.',
+        '在 $x^2+2x-3=4$ 中，两边减去 4 得 $x^2+2x-7=0$，因此常数项为 $-7$。')} /></p>
+      {index === null && <button className="button" onClick={() => {
+        const firstIncomplete = completed.indexOf(false)
+        setIndex(firstIncomplete < 0 ? 0 : firstIncomplete)
+      }}>{count > 0 && count < standardFormTasks.length ? t('Resume practice', '继续练习') : t('Start practice', '开始练习')}</button>}
+    </article>
+    <p className="attempt-meta" aria-live="polite">{t('Completed', '已完成')} {count}/{standardFormTasks.length}</p>
+    {active && index !== null && <>
+      <label className="exercise-picker foundation-picker">{t('Question', '题目')}
+        <select value={index} onChange={event => setIndex(Number(event.target.value))}>
+          {standardFormTasks.map(({ task }, position) => <option key={task.id} value={position}>
+            {position+1}{completed[position] ? ' ✓' : ''}
+          </option>)}
+        </select>
+      </label>
+      <Question key={active.task.id} task={active.task} hint={active.hint} commonMistake={active.commonMistake}
+        step={(index+1)+'/'+standardFormTasks.length} t={t} track
+        onCorrect={() => setCompleted(current => current.map((done, position) => done || position === index))}
+        previous={index > 0 ? () => setIndex(index-1) : undefined}
+        next={index+1 < standardFormTasks.length ? () => setIndex(index+1) : undefined} />
+    </>}
+  </section>
 }
 
 createRoot(document.getElementById('root')!).render(<App />)
