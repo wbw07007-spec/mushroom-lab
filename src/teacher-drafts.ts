@@ -31,7 +31,16 @@ function isAnswer(answer: unknown): answer is Answer {
 function isTask(task: unknown): task is Task {
   return isRecord(task) && hasText(task.id) && hasText(task.skill) && hasText(task.prompt) &&
     hasText(task.solution) && typeof task.misconception === 'string' &&
-    (task.difficulty === 'foundation' || task.difficulty === 'standard') && isAnswer(task.answer)
+    (task.difficulty === 'foundation' || task.difficulty === 'standard') && isAnswer(task.answer) &&
+    (task.signGraph === undefined || isSignGraph(task.signGraph))
+}
+
+function isSignGraph(graph: unknown): boolean {
+  if (!isRecord(graph)) return false
+  return Array.isArray(graph.roots) && graph.roots.length === 2 &&
+    graph.roots.every(isNumber) && graph.roots[0] < graph.roots[1] &&
+    Array.isArray(graph.labels) && graph.labels.length === 2 && graph.labels.every(hasText) &&
+    hasText(graph.variable) && (graph.region === 'inside' || graph.region === 'outside')
 }
 
 export function isExercise(exercise: unknown): exercise is Exercise {

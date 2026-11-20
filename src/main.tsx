@@ -7,8 +7,10 @@ import './styles.css'
 import mushroomMark from './mushroom-mark.svg'
 import { functionNotes } from './content/function-notes'
 import { TeacherEditor } from './TeacherEditor'
+import { SignGraph } from './SignGraph'
 import { bank, glossary } from './content/questions'
-import type { Task } from './content/questions'
+import { quadratics } from './content/quadratics'
+import type { Exercise, Task } from './content/questions'
 import { grade } from './grading'
 
 const pages = [
@@ -16,7 +18,9 @@ const pages = [
   ['practice', 'Practice', '练习'], ['library', 'Resource Library', '资源库'],
   ['about', 'About', '学术主页'],
 ]
-const tasks = bank.exercises.flatMap<Task>(exercise => exercise.tasks)
+const functionsTasks = bank.exercises.flatMap<Task>(exercise => exercise.tasks)
+const quadraticsTasks = quadratics.flatMap(exercise => exercise.tasks)
+const tasks = [...functionsTasks, ...quadraticsTasks]
 const storageKey = 'mushroom:p1:' + bank.version
 const syllabus = 'https://www.cambridgeinternational.org/Images/697427-2026-2027-syllabus.pdf'
 const studyNotes = [
@@ -82,7 +86,7 @@ function App() {
     <header><div className="nav">
       <a className="brand" href="#home"><img className="logo" src={mushroomMark} alt="" width="40" height="40" /><span>Mushroom Lab</span></a>
       <nav aria-label={t('Main navigation', '主导航')}>{pages.map(([id,en,cn]) =>
-        <a key={id} href={'#'+id} aria-current={page === id ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
+        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && page === 'quadratics') ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
       <button className="language" onClick={() => setZh(!zh)} lang={zh ? 'en' : 'zh-CN'}>{zh ? 'English' : '中文'}</button>
     </div></header>
     <main>
@@ -98,7 +102,12 @@ function App() {
         <a className="card" key={id} href={'#'+id}><h2>{t(en,cn)}</h2><p>{t(desc,cd)}</p><span aria-hidden="true">↗</span></a>)}</section>
     </>}
     {page === 'academy' && <><h1>{t('Mushroom Academy','课程中心')}</h1><div className="cards">
-      <article className="card"><p className="eyebrow">9709</p><h2>AS &amp; A Level Mathematics</h2><p>Pure Mathematics 1 · 1.2 Functions</p><a className="button" href="#practice">{t('Open practice','进入练习')} →</a><p><a href={syllabus}>{t('Official syllabus','官方考纲')}</a></p><p>{t('Planned modules','规划模块')} · P3 / M1 / S1</p></article>
+      <article className="card"><p className="eyebrow">9709</p><h2>AS &amp; A Level Mathematics</h2><p>Pure Mathematics 1</p>
+        <ul>
+          <li><a href="#quadratics">{t('1.1 Quadratics','1.1 二次函数与方程')}</a></li>
+          <li><a href="#practice">{t('1.2 Functions','1.2 函数')}</a></li>
+        </ul>
+        <p><a href={syllabus}>{t('Official syllabus','官方考纲')}</a></p><p>{t('Planned modules','规划模块')} · P3 / M1 / S1</p></article>
       <article className="card"><p className="eyebrow">0580</p><h2>IGCSE Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
       <article className="card"><p className="eyebrow">9231</p><h2>Further Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
     </div></>}
@@ -126,34 +135,53 @@ function App() {
       </section>
     </>}
     {page === 'about' && <><p className="eyebrow">{t('Academic Portfolio','学术主页')}</p><h1>Bowen Wei</h1><article className="card reading"><h2>{t('Education','教育背景')}</h2><p>University of Manchester · Mathematics with Financial Mathematics</p><h2>{t('Teaching & curriculum','教学与课程开发')}</h2><p>{t('International mathematics teaching, curriculum development and mathematics teaching leadership.', '国际课程数学教学、课程开发与数学教研管理。')}</p></article></>}
-    {page === 'practice' && <Practice t={t} progress={progress} complete={complete} />}
+    {page === 'practice' && <Practice key="functions" t={t} progress={progress} complete={complete}
+      exercises={bank.exercises} topicTasks={functionsTasks} title={t(bank.topic, '函数与图像变换')} />}
+    {page === 'quadratics' && <Practice key="quadratics" t={t} progress={progress} complete={complete}
+      exercises={quadratics} topicTasks={quadraticsTasks} title={t('Quadratics', '二次函数与方程')} />}
     {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
       <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
-    {page !== 'teacher' && page !== 'past-papers' && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
+    {page !== 'teacher' && page !== 'past-papers' && page !== 'quadratics' && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
     </main>
     <footer><strong>Mushroom Lab</strong><a href="#teacher">{t('Question Builder','教师题目编辑器')}</a><span>{t('Explore Mathematics Differently.','蘑菇数学实验室')}</span></footer>
   </>
 }
 
 type PracticeProps = { t: (en: string, cn: string) => string; progress: string[]; complete: (id: string) => void }
-function Practice({ t, progress, complete }: PracticeProps) {
-  const [index, setIndex] = useState(() => Math.max(0, tasks.findIndex(task => !progress.includes(task.id))))
-  const task = tasks[index]
-  const exercise = bank.exercises.find(item => item.tasks.some(step => step.id === task.id))!
-  const exerciseStart = tasks.findIndex(step => step.id === exercise.tasks[0].id)
+function Practice({ t, progress, complete, exercises, topicTasks, title }: PracticeProps & {
+  exercises: Exercise[]; topicTasks: Task[]; title: string
+}) {
+  const [index, setIndex] = useState(() => Math.max(0, topicTasks.findIndex(task => !progress.includes(task.id))))
+  const task = topicTasks[index]
+  const exercise = exercises.find(item => item.tasks.some(step => step.id === task.id))!
+  const exerciseStart = topicTasks.findIndex(step => step.id === exercise.tasks[0].id)
+  const completedCount = topicTasks.filter(step => progress.includes(step.id)).length
   return <>
     <div className="practice-heading">
       <a href="#academy">{t('Academy','课程中心')}</a><span> / Cambridge 9709 / Pure Mathematics 1</span>
-      <h1 className="practice-title">{t(bank.topic, '函数与图像变换')}</h1>
+      <h1 className="practice-title">{title}</h1>
+      <div className="actions" aria-label={t('P1 topics','P1 专题')}>
+        <a href="#quadratics">{t('Quadratics','二次函数与方程')}</a>
+        <a href="#practice">{t('Functions & Transformations','函数与图像变换')}</a>
+      </div>
     </div>
     <div className="practice-layout">
-      <aside className="card"><p>{t('Progress','学习进度')} · {progress.length}/{tasks.length}</p>
-      <progress aria-label={t('Progress','学习进度')} value={progress.length} max={tasks.length} />
-      {bank.exercises.map(item => <button key={item.id} aria-current={item.id === exercise.id ? 'step' : undefined} onClick={() => setIndex(tasks.findIndex(step => step.id === item.tasks[0].id))}>{item.title}{item.tasks.every(step => progress.includes(step.id)) && <span className="done" aria-label={t('Completed','已完成')}>✓</span>}</button>)}</aside>
+      <aside className="card"><p>{t('Progress','学习进度')} · {completedCount}/{topicTasks.length}</p>
+      <progress aria-label={t('Progress','学习进度')} value={completedCount} max={topicTasks.length} />
+      <label className="exercise-picker">{t('Exercise','选择练习')}
+        <select value={exercise.id} onChange={event => {
+          const selected = exercises.find(item => item.id === event.target.value)
+          if (selected) setIndex(topicTasks.findIndex(step => step.id === selected.tasks[0].id))
+        }}>
+          {exercises.map((item, position) => <option key={item.id} value={item.id}>
+            {position + 1}. {item.title}{item.tasks.every(step => progress.includes(step.id)) ? ' ✓' : ''}
+          </option>)}
+        </select>
+      </label></aside>
       <Question key={task.id} task={task} context={exercise.context} step={exercise.tasks.length > 1 ? (index-exerciseStart+1) + '/' + exercise.tasks.length : undefined}
         t={t} onCorrect={() => complete(task.id)} previous={index > 0 ? () => setIndex(index-1) : undefined}
-        next={index < tasks.length-1 ? () => setIndex(index+1) : undefined} />
+        next={index < topicTasks.length-1 ? () => setIndex(index+1) : undefined} />
     </div>
     <p className="muted">{t('Progress measures completed practice tasks. Cambridge exam grades use separate assessment criteria.','进度记录已完成的练习任务。Cambridge 考试使用独立的评分标准。')}</p>
   </>
@@ -197,12 +225,12 @@ function Question({ task, context, step, t, onCorrect, previous, next }: {
         {previous && <button type="button" onClick={previous}>{t('Previous','上一步')}</button>}
         {next && <button type="button" onClick={next}>{t('Next','下一步')} →</button>}</div>
     </form>
-    <div aria-live="polite">{feedback === 'correct' && <div className="feedback"><strong>{t('Correct','回答正确')}</strong><p><MathText value={task.solution} /></p></div>}
+    <div aria-live="polite">{feedback === 'correct' && <div className="feedback"><strong>{t('Correct','回答正确')}</strong><p><MathText value={task.solution} /></p>{task.signGraph && <SignGraph graph={task.signGraph} />}</div>}
     {feedback === 'retry' && <p className="feedback retry"><strong>{t('Try again','再试一次')}</strong> · {task.misconception}</p>}
     {feedback === 'missing' && <p className="feedback retry">{answer.type === 'vector'
       ? t('Enter a valid number in both rows of the column vector.','请在列向量的上下两行分别输入有效数值。')
       : t('Enter a valid answer or select an option.','请输入有效答案或选择选项。')}</p>}</div>
-    {feedback !== 'correct' && <details><summary>{t('Worked solution','完整解析')}</summary><p><MathText value={task.solution} /></p></details>}
+    {feedback !== 'correct' && <details><summary>{t('Worked solution','完整解析')}</summary><p><MathText value={task.solution} /></p>{task.signGraph && <SignGraph graph={task.signGraph} />}</details>}
   </article>
 }
 

@@ -4,6 +4,7 @@ export type Answer = { type: 'single' | 'multiple'; choices: string[]; correct: 
 export type Task = {
   id: string; skill: string; difficulty: 'foundation' | 'standard'; prompt: string;
   answer: Answer; solution: string; misconception: string;
+  signGraph?: { roots: [number, number]; labels: [string, string]; variable: string; region: 'inside' | 'outside' };
 }
 export type Exercise = { id: string; title: string; context?: string; tasks: Task[] }
 
