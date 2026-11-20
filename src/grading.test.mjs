@@ -1,14 +1,11 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { bank } from './content/questions.ts'
-import { quadratics } from './content/quadratics.ts'
-import { functionsCompanions } from './content/functions-companions.ts'
-import { coordinateGeometry } from './content/coordinate-geometry.ts'
+import { practiceTopics } from './content/practice-topics.ts'
 import { grade } from './grading.ts'
 
 test('all published steps accept their authored answers', () => {
   const ids = new Set()
-  for (const exercise of [...bank.exercises, ...quadratics, ...functionsCompanions, ...coordinateGeometry]) {
+  for (const exercise of practiceTopics.flatMap(topic => topic.exercises)) {
     for (const task of exercise.tasks) {
       assert.ok(!ids.has(task.id))
       ids.add(task.id)
