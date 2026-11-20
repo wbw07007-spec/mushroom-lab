@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
@@ -8,9 +8,11 @@ import mushroomMark from './mushroom-mark.svg'
 import { functionNotes } from './content/function-notes'
 import { TeacherEditor } from './TeacherEditor'
 import { SignGraph } from './SignGraph'
+import { ChordOfContactDiagram } from './ChordOfContactDiagram'
 import { bank, glossary } from './content/questions'
 import { quadratics } from './content/quadratics'
 import { functionsCompanions } from './content/functions-companions'
+import { coordinateGeometry } from './content/coordinate-geometry'
 import type { Exercise, Task } from './content/questions'
 import { grade } from './grading'
 
@@ -22,7 +24,8 @@ const pages = [
 const functionsTasks = bank.exercises.flatMap<Task>(exercise => exercise.tasks)
 const companionTasks = functionsCompanions.flatMap(exercise => exercise.tasks)
 const quadraticsTasks = quadratics.flatMap(exercise => exercise.tasks)
-const tasks = [...functionsTasks, ...quadraticsTasks, ...companionTasks]
+const geometryTasks = coordinateGeometry.flatMap(exercise => exercise.tasks)
+const tasks = [...functionsTasks, ...quadraticsTasks, ...companionTasks, ...geometryTasks]
 const storageKey = 'mushroom:p1:' + bank.version
 const syllabus = 'https://www.cambridgeinternational.org/Images/697427-2026-2027-syllabus.pdf'
 const studyNotes = [
@@ -88,7 +91,7 @@ function App() {
     <header><div className="nav">
       <a className="brand" href="#home"><img className="logo" src={mushroomMark} alt="" width="40" height="40" /><span>Mushroom Lab</span></a>
       <nav aria-label={t('Main navigation', '主导航')}>{pages.map(([id,en,cn]) =>
-        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && ['quadratics', 'functions-companions'].includes(page)) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
+        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && ['quadratics', 'functions-companions', 'coordinate-geometry'].includes(page)) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
       <button className="language" onClick={() => setZh(!zh)} lang={zh ? 'en' : 'zh-CN'}>{zh ? 'English' : '中文'}</button>
     </div></header>
     <main>
@@ -107,6 +110,7 @@ function App() {
       <article className="card"><p className="eyebrow">9709</p><h2>AS &amp; A Level Mathematics</h2><p>Pure Mathematics 1</p>
         <ul>
           <li><a href="#functions-companions">{t('Functions: Exam-style Practice', '函数真题同类练习')}</a></li>
+          <li><a href="#coordinate-geometry">{t('Coordinate Geometry', '坐标几何')}</a></li>
           <li><a href="#quadratics">{t('1.1 Quadratics','1.1 二次函数与方程')}</a></li>
           <li><a href="#practice">{t('1.2 Functions','1.2 函数')}</a></li>
         </ul>
@@ -144,10 +148,12 @@ function App() {
       exercises={quadratics} topicTasks={quadraticsTasks} title={t('Quadratics', '二次函数与方程')} />}
     {page === 'functions-companions' && <Practice key="functions-companions" t={t} progress={progress} complete={complete}
       exercises={functionsCompanions} topicTasks={companionTasks} title={t('Functions: Exam-style Practice', '函数真题同类练习')} />}
+    {page === 'coordinate-geometry' && <Practice key="coordinate-geometry" t={t} progress={progress} complete={complete}
+      exercises={coordinateGeometry} topicTasks={geometryTasks} title={t('Coordinate Geometry', '坐标几何')} />}
     {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
       <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
-    {page !== 'teacher' && page !== 'past-papers' && page !== 'quadratics' && page !== 'functions-companions' && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
+    {page !== 'teacher' && page !== 'past-papers' && page !== 'quadratics' && page !== 'functions-companions' && page !== 'coordinate-geometry' && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
     </main>
     <footer><strong>Mushroom Lab</strong><a href="#teacher">{t('Question Builder','教师题目编辑器')}</a><span>{t('Explore Mathematics Differently.','蘑菇数学实验室')}</span></footer>
   </>
@@ -167,6 +173,7 @@ function Practice({ t, progress, complete, exercises, topicTasks, title }: Pract
       <a href="#academy">{t('Academy','课程中心')}</a><span> / Cambridge 9709 / Pure Mathematics 1</span>
       <h1 className="practice-title">{title}</h1>
       <div className="actions" aria-label={t('P1 topics','P1 专题')}>
+        <a href="#coordinate-geometry">{t('Coordinate Geometry', '坐标几何')}</a>
         <a href="#quadratics">{t('Quadratics','二次函数与方程')}</a>
         <a href="#practice">{t('Functions & Transformations','函数与图像变换')}</a>
         <a href="#functions-companions">{t('Functions: Exam-style Practice','函数真题同类练习')}</a>
@@ -186,6 +193,7 @@ function Practice({ t, progress, complete, exercises, topicTasks, title }: Pract
         </select>
       </label></aside>
       <Question key={task.id} task={task} context={exercise.context} step={exercise.tasks.length > 1 ? (index-exerciseStart+1) + '/' + exercise.tasks.length : undefined}
+        diagram={exercise.id === 'p1-cg-07' && <ChordOfContactDiagram label={t('Two tangents from T touch the circle at A and B. C is the centre.', '从圆外点 T 引两条切线，切点为 A 和 B，圆心为 C。')} />}
         t={t} onCorrect={() => complete(task.id)} previous={index > 0 ? () => setIndex(index-1) : undefined}
         next={index < topicTasks.length-1 ? () => setIndex(index+1) : undefined} />
     </div>
@@ -193,8 +201,8 @@ function Practice({ t, progress, complete, exercises, topicTasks, title }: Pract
   </>
 }
 
-function Question({ task, context, step, t, onCorrect, previous, next }: {
-  task: typeof tasks[number]; context?: string; step?: string; t: PracticeProps['t'];
+function Question({ task, context, step, diagram, t, onCorrect, previous, next }: {
+  task: typeof tasks[number]; context?: string; step?: string; diagram?: ReactNode; t: PracticeProps['t'];
   onCorrect: () => void; previous?: () => void; next?: () => void
 }) {
   const [response, setResponse] = useState<number[]>([])
@@ -211,6 +219,7 @@ function Question({ task, context, step, t, onCorrect, previous, next }: {
   return <article className="card question">
     <p className="eyebrow">{step ? t('Guided practice · Step ', '分步练习 · 步骤 ') + step : t('Guided practice','引导练习')}</p>
     {context && <p><MathText value={context} translate /></p>}
+    {diagram}
     <form onSubmit={submit}><fieldset><legend><MathText value={task.prompt} translate /></legend>
       {answer.type === 'vector'
         ? <div className="vector-entry">
