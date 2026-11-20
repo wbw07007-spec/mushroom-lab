@@ -10,6 +10,7 @@ import { TeacherEditor } from './TeacherEditor'
 import { SignGraph } from './SignGraph'
 import { bank, glossary } from './content/questions'
 import { quadratics } from './content/quadratics'
+import { functionsCompanions } from './content/functions-companions'
 import type { Exercise, Task } from './content/questions'
 import { grade } from './grading'
 
@@ -19,8 +20,9 @@ const pages = [
   ['about', 'About', '学术主页'],
 ]
 const functionsTasks = bank.exercises.flatMap<Task>(exercise => exercise.tasks)
+const companionTasks = functionsCompanions.flatMap(exercise => exercise.tasks)
 const quadraticsTasks = quadratics.flatMap(exercise => exercise.tasks)
-const tasks = [...functionsTasks, ...quadraticsTasks]
+const tasks = [...functionsTasks, ...quadraticsTasks, ...companionTasks]
 const storageKey = 'mushroom:p1:' + bank.version
 const syllabus = 'https://www.cambridgeinternational.org/Images/697427-2026-2027-syllabus.pdf'
 const studyNotes = [
@@ -86,7 +88,7 @@ function App() {
     <header><div className="nav">
       <a className="brand" href="#home"><img className="logo" src={mushroomMark} alt="" width="40" height="40" /><span>Mushroom Lab</span></a>
       <nav aria-label={t('Main navigation', '主导航')}>{pages.map(([id,en,cn]) =>
-        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && page === 'quadratics') ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
+        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && ['quadratics', 'functions-companions'].includes(page)) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
       <button className="language" onClick={() => setZh(!zh)} lang={zh ? 'en' : 'zh-CN'}>{zh ? 'English' : '中文'}</button>
     </div></header>
     <main>
@@ -104,6 +106,7 @@ function App() {
     {page === 'academy' && <><h1>{t('Mushroom Academy','课程中心')}</h1><div className="cards">
       <article className="card"><p className="eyebrow">9709</p><h2>AS &amp; A Level Mathematics</h2><p>Pure Mathematics 1</p>
         <ul>
+          <li><a href="#functions-companions">{t('Functions: Exam-style Practice', '函数真题同类练习')}</a></li>
           <li><a href="#quadratics">{t('1.1 Quadratics','1.1 二次函数与方程')}</a></li>
           <li><a href="#practice">{t('1.2 Functions','1.2 函数')}</a></li>
         </ul>
@@ -139,10 +142,12 @@ function App() {
       exercises={bank.exercises} topicTasks={functionsTasks} title={t(bank.topic, '函数与图像变换')} />}
     {page === 'quadratics' && <Practice key="quadratics" t={t} progress={progress} complete={complete}
       exercises={quadratics} topicTasks={quadraticsTasks} title={t('Quadratics', '二次函数与方程')} />}
+    {page === 'functions-companions' && <Practice key="functions-companions" t={t} progress={progress} complete={complete}
+      exercises={functionsCompanions} topicTasks={companionTasks} title={t('Functions: Exam-style Practice', '函数真题同类练习')} />}
     {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
       <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
-    {page !== 'teacher' && page !== 'past-papers' && page !== 'quadratics' && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
+    {page !== 'teacher' && page !== 'past-papers' && page !== 'quadratics' && page !== 'functions-companions' && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
     </main>
     <footer><strong>Mushroom Lab</strong><a href="#teacher">{t('Question Builder','教师题目编辑器')}</a><span>{t('Explore Mathematics Differently.','蘑菇数学实验室')}</span></footer>
   </>
@@ -164,6 +169,7 @@ function Practice({ t, progress, complete, exercises, topicTasks, title }: Pract
       <div className="actions" aria-label={t('P1 topics','P1 专题')}>
         <a href="#quadratics">{t('Quadratics','二次函数与方程')}</a>
         <a href="#practice">{t('Functions & Transformations','函数与图像变换')}</a>
+        <a href="#functions-companions">{t('Functions: Exam-style Practice','函数真题同类练习')}</a>
       </div>
     </div>
     <div className="practice-layout">
