@@ -22,6 +22,10 @@
   margin-bottom: 0;
 }
 
+.motion-chapter-card + .motion-chapter-card {
+  margin-top: .75rem;
+}
+
 .motion-library-links {
   display: flex;
   align-items: center;
@@ -170,6 +174,10 @@
   stroke-dasharray: 4 4;
 }
 .motion-gradient, .motion-area { color: #884425; }
+
+.force-arrow { stroke: currentColor; stroke-width: 2.1; }
+.force-body { stroke: currentColor; stroke-width: 1.7; fill: #f1f5ed; }
+.force-surface { stroke: #77877d; stroke-width: 1.5; fill: none; }
 
 .motion-candidates {
   display: grid;

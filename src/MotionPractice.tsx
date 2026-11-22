@@ -3,24 +3,20 @@ import type { FormEvent } from 'react'
 import katex from 'katex'
 import { applyAttempt, completionMethod, readHistory, writeHistory } from './attempt-history'
 import type { AttemptEvent, AttemptHistory } from './attempt-history'
-import { motionNoteSections, motionQuestions, motionSections, motionTitle } from './content/m1-motion'
-import type { MotionSection } from './content/m1-motion'
-import type { MotionQuestion } from './content/m1-motion-types'
+import { findM1Chapter, m1Chapters } from './content/m1-practice'
+import type { MotionQuestion, MotionSection } from './content/m1-motion-types'
 import { grade } from './grading'
 import { MathText } from './MathText'
 import { MotionPlot } from './MotionPlot'
+import { ForceDiagram } from './ForceDiagram'
 import './motion.css'
 
 type Translate = (en: string, zh: string) => string
 type Responses = Partial<Record<number, string | number>>
-const pdf = import.meta.env.BASE_URL + 'study-notes/m1-01.pdf'
 const storage = {
   getItem: (key: string) => window.localStorage.getItem(key),
   setItem: (key: string, value: string) => window.localStorage.setItem(key, value),
 }
-const noteLinks = motionNoteSections.map(note => ({ ...note,
-  href: '#' + note.sectionId + ('questionId' in note ? '/' + note.questionId : ''),
-}))
 const statusLabels = {
   first: ['Correct independently on first attempt', '首次独立答对'],
   retried: ['Correct independently after a retry', '重试后独立答对'],
@@ -67,6 +63,7 @@ function MotionExercise({ question, history, t, mark }: {
       <span>{t('Valid attempts', '有效作答')} {history.attempts}</span></p>
     <div lang="en" className="motion-prompt"><MotionText value={question.prompt} /></div>
     {question.plot && <MotionPlot plot={question.plot} />}
+    {question.forceDiagram && <ForceDiagram diagram={question.forceDiagram} caption={t('Force diagram · schematic', '受力示意图')} />}
     <form onSubmit={submit}>
       {question.parts.map((part, index) => {
         const submitted = submission?.responses[index]
@@ -120,6 +117,8 @@ function MotionExercise({ question, history, t, mark }: {
         setShowSolution(!showSolution)
       }}>{t('Worked Solution', '完整解析')}</button>
       {showSolution && <section aria-label={t('Worked solution steps', '逐行解析')}>
+        {question.workedForceDiagram && <ForceDiagram diagram={question.workedForceDiagram}
+          caption={t('Forces used in the solution', '解析中的受力图')} />}
         {question.plot?.kind !== 'line' && question.plot?.analysis && <MotionPlot plot={question.plot} explain
           caption={t(question.plot.analysis.areas ? 'Signed area by region' : 'Gradient triangle',
             question.plot.analysis.areas ? '分区标注带符号面积' : '斜率三角形')} />}
@@ -137,55 +136,65 @@ function MotionExercise({ question, history, t, mark }: {
 
 export function MotionPractice({ page, t }: { page: string; t: Translate }) {
   const [route, deepQuestion] = page.split('/')
-  const section = motionSections.find(item => item.id === route)
+  const chapter = findM1Chapter(route) ?? m1Chapters[0]
+  const section = chapter.sections.find(item => item.id === route)
   const [histories, setHistories] = useState(() => Object.fromEntries(
-    motionQuestions.map(question => [question.id, readHistory(storage, question.id, 'm1')]),
+    m1Chapters.flatMap(item => item.sections.flatMap(group =>
+      group.questions.map(question => [question.id, readHistory(storage, question.id, 'm1')] as const))),
   ))
   const count = (questions: MotionQuestion[]) => questions.filter(question => histories[question.id].completed).length
-  const notes = route === 'm1-motion-notes'
-  const chapterName = t('Chapter 1 · ' + motionTitle[0], '第一章 · ' + motionTitle[1])
+  const notes = route === chapter.id+'-notes'
+  const ordinal = t(...chapter.ordinal)
+  const chapterTitle = t(...chapter.title)
+  const chapterName = ordinal + ' · ' + chapterTitle
+  const pdf = import.meta.env.BASE_URL + 'study-notes/' + chapter.pdf
 
   const breadcrumbs = <nav className="motion-breadcrumb" aria-label={t('Practice location', '练习位置')}>
     <a href="#academy">{t('Academy', '课程中心')}</a>
     {route !== 'm1' && <a href="#m1">{t('M1 Practice', 'M1 练习')}</a>}
-    {route !== 'm1' && route !== 'm1-motion' && <a href="#m1-motion">{t('Chapter 1', '第一章')}</a>}
+    {route !== 'm1' && route !== chapter.id && <a href={'#'+chapter.id}>{ordinal}</a>}
   </nav>
 
   if (route === 'm1') return <div className="motion-page">
     {breadcrumbs}
     <p className="eyebrow">Cambridge 9709 · Paper 4</p>
     <h1 className="practice-title">{t('M1 Practice', 'M1 练习')}</h1>
-    <a className="card motion-chapter-card" href="#m1-motion">
-      <h2>{chapterName}</h2>
-      <p>{count(motionQuestions)}/{motionQuestions.length} {t('completed', '已完成')}</p>
-    </a>
+    {m1Chapters.map(item => {
+      const questions = item.sections.flatMap(group => group.questions)
+      return <a key={item.id} className="card motion-chapter-card" href={'#'+item.id}>
+        <h2>{t(...item.ordinal)} · {t(...item.title)}</h2>
+        <p>{count(questions)}/{questions.length} {t('completed', '已完成')}</p>
+      </a>
+    })}
   </div>
 
   if (!section) return <div className="motion-page">
     {breadcrumbs}
-    <h1 className="practice-title">{notes ? t('Motion in a straight line · Study Notes', '直线运动 · 第一章笔记') : chapterName}</h1>
+    <h1 className="practice-title">{notes ? chapterTitle + t(' · Study Notes', ' · ' + ordinal + '笔记') : chapterName}</h1>
     <div className="motion-library-links">
-      {notes ? <a className="button" href="#m1-motion">{t('Practise Chapter 1', '练习第一章')}</a>
-        : <a className="button" href="#m1-motion-notes">{t('Read the Chapter 1 notes', '阅读第一章笔记')}</a>}
+      {notes ? <a className="button" href={'#'+chapter.id}>{t('Practise ', '练习')+ordinal}</a>
+        : <a className="button" href={'#'+chapter.id+'-notes'}>{t('Read the '+ordinal+' notes', '阅读'+ordinal+'笔记')}</a>}
       <a href={pdf}>{t('Open PDF', '打开 PDF')}</a>
     </div>
     <ul className="motion-sections">
-      {noteLinks.map(note => {
-        const group = motionSections.find(item => item.id === note.sectionId)!
-        const items = 'questionId' in note ? group.questions.filter(question => question.id === note.questionId) : group.questions
+      {chapter.notes.map(note => {
+        const group = chapter.sections.find(item => item.id === note.sectionId)!
+        const items = note.questionId ? group.questions.filter(question => question.id === note.questionId) : group.questions
+        const href = '#'+note.sectionId+(note.questionId ? '/'+note.questionId : '')
         return <li key={note.page} className="card motion-section-card">
           <div><span className="eyebrow">{note.number} · {t('Notes p. ', '笔记第 ')}{note.page}{t('', ' 页')}</span>
-            <h2><a href={note.href}>{t(note.title[0], note.title[1])}</a></h2>
+            <h2><a href={href}>{t(...note.title)}</a></h2>
             <span className="muted">{count(items)}/{items.length} {t('completed', '已完成')}
-              {'questionId' in note && ' · ' + t('in chapter independent practice', '见章节独立练习')}</span>
+              {note.questionId && ' · ' + t('in chapter independent practice', '见章节独立练习')}</span>
           </div>
           {notes && <a href={pdf + '#page=' + note.page} aria-label={t('Read notes page ', '打开笔记第 ') + note.page}>{t('Read PDF page', '阅读此页')}</a>}
         </li>
       })}
-      <li className="card motion-section-card">
-        <div><h2><a href={'#' + motionSections[3].id}>{t(...motionSections[3].title)}</a></h2>
-          <span className="muted">{count(motionSections[3].questions)}/{motionSections[3].questions.length} {t('completed', '已完成')}</span></div>
-      </li>
+      {chapter.sections.filter(group => !chapter.notes.some(note => note.sectionId === group.id && !note.questionId)).map(group =>
+        <li key={group.id} className="card motion-section-card">
+          <div><h2><a href={'#'+group.id}>{t(...group.title)}</a></h2>
+            <span className="muted">{count(group.questions)}/{group.questions.length} {t('completed', '已完成')}</span></div>
+        </li>)}
     </ul>
   </div>
 

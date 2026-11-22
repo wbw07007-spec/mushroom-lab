@@ -3,14 +3,7 @@ import { motionIndependent, motionVelocity } from './m1-motion-advanced.ts'
 import { extraMotionBasics, extraMotionDisplacementA } from './m1-motion-extension-basics.ts'
 import { extraMotionDisplacementB, extraMotionVelocityA } from './m1-motion-extension-graphs.ts'
 import { extraMotionIndependent, extraMotionVelocityB } from './m1-motion-extension-review.ts'
-import type { Bilingual, MotionQuestion } from './m1-motion-types.ts'
-
-export type MotionSection = {
-  id: string
-  title: Bilingual
-  notePage?: number
-  questions: MotionQuestion[]
-}
+import type { Bilingual, MotionSection } from './m1-motion-types.ts'
 
 export const motionTitle = ['Motion in a straight line', '直线运动'] as const
 export const motionSections: MotionSection[] = [

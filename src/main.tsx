@@ -15,7 +15,7 @@ import type { Exercise, Task } from './content/questions'
 import { grade } from './grading'
 import { MathText } from './MathText'
 import { MotionPractice } from './MotionPractice'
-import { motionSections } from './content/m1-motion'
+import { findM1Chapter, m1Chapters } from './content/m1-practice'
 
 const pages = [
   ['home', 'Home', '首页'], ['academy', 'Academy', '课程'],
@@ -46,8 +46,7 @@ function readProgress(): string[] {
 function App() {
   const [page, setPage] = useState(location.hash.slice(1) || 'home')
   const practiceTopic = practiceTopics.find(topic => topic.id === page)
-  const motionPage = ['m1', 'm1-motion', 'm1-motion-notes'].includes(page)
-    || motionSections.some(section => section.id === page.split('/')[0])
+  const motionPage = page === 'm1' || Boolean(findM1Chapter(page.split('/')[0]))
   const [zh, setZh] = useState(false)
   const [progress, setProgress] = useState(readProgress)
   const t = (en: string, cn: string) => zh ? cn : en
@@ -96,7 +95,9 @@ function App() {
         <p><a href={syllabus}>{t('Official syllabus','官方考纲')}</a></p><p>{t('Planned modules','规划模块')} · P3 / S1</p></article>
       <article className="card"><p className="eyebrow">9709 · Paper 4</p><h2>Mechanics</h2>
         <p><a className="button" href="#m1">{t('M1 Practice', 'M1 练习')}</a></p>
-        <p><a href="#m1-motion-notes">{t('Chapter 1 · Motion in a straight line notes', '第一章 · 直线运动笔记')}</a></p>
+        {m1Chapters.map(chapter => <p key={chapter.id}>
+          <a href={'#'+chapter.id+'-notes'}>{t(...chapter.ordinal)} · {t(...chapter.title)}{t(' notes', '笔记')}</a>
+        </p>)}
       </article>
       <article className="card"><p className="eyebrow">0580</p><h2>IGCSE Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
       <article className="card"><p className="eyebrow">9231</p><h2>Further Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
@@ -120,7 +121,7 @@ function App() {
             <a href={import.meta.env.BASE_URL + 'study-notes/' + prefix + '-' + String(index + 1).padStart(2, '0') + '.pdf'}>
               {t(en, cn)} (PDF)
             </a>
-            {prefix === 'm1' && index === 0 && <> · <a href="#m1-motion-notes">{t('Notes & practice', '笔记与练习')}</a></>}
+            {prefix === 'm1' && m1Chapters[index] && <> · <a href={'#'+m1Chapters[index].id+'-notes'}>{t('Notes & practice', '笔记与练习')}</a></>}
           </li>)}</ul>
         </article>)}
       </section>
