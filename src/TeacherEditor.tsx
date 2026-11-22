@@ -1,58 +1,82 @@
 import { useState } from 'react'
 import { bank } from './content/questions'
 import type { Answer, Exercise, Task } from './content/questions'
-import { draftsKey, isExercise, parseDraft, readDrafts } from './teacher-drafts'
+import { parseNumber } from './grading'
+import { draftsKey, isExercise, isTask, parseDraft, readDrafts, serializeDraft } from './teacher-drafts'
 
 type Props = {
   t: (en: string, cn: string) => string
   preview: (task: Task, context: string) => React.ReactNode
+  sample?: Exercise
 }
 const emptyTask: Task = { id: '', skill: '', difficulty: 'foundation', prompt: '', answer: { type: 'number', correct: 0 }, solution: '', misconception: '' }
 const emptyExercise: Exercise = { id: '', title: '', context: '', tasks: [] }
+type WorkedStep = NonNullable<Task['workedSteps']>[number]
+const emptyWorkedStep: WorkedStep = { math: '', en: '', zh: '' }
 
-export function TeacherEditor({ t, preview }: Props) {
-  const [exercise, setExercise] = useState<Exercise>(emptyExercise)
-  const [task, setTask] = useState<Task>(emptyTask)
-  const [index, setIndex] = useState(-1)
-  const [choices, setChoices] = useState('')
-  const [correct, setCorrect] = useState('')
-  const [message, setMessage] = useState('')
-  const [previewTask, setPreviewTask] = useState<Task>()
+function answerChoices(answer: Answer) {
+  return 'choices' in answer ? answer.choices.join('\n') : ''
+}
+
+function answerInput(answer: Answer) {
+  if ('choices' in answer) return answer.correct.map(position => position + 1).join(', ')
+  return answer.type === 'number' ? String(answer.correct) : answer.correct.join(', ')
+}
+
+export function TeacherEditor({ t, preview, sample }: Props) {
   const [drafts, setDrafts] = useState(() => readDrafts({
     getItem: key => window.localStorage.getItem(key),
   }))
+  const [exercise, setExercise] = useState<Exercise>(() => {
+    if (!sample) return emptyExercise
+    const draft = drafts.find(item => item.id === sample.id)
+    return draft ? { ...sample, ...draft } : sample
+  })
+  const [index, setIndex] = useState(exercise.tasks.length ? 0 : -1)
+  const [task, setTask] = useState<Task>(() => exercise.tasks[0] ?? emptyTask)
+  const [choices, setChoices] = useState(() => index < 0 ? '' : answerChoices(task.answer))
+  const [correct, setCorrect] = useState(() => index < 0 ? '' : answerInput(task.answer))
+  const [message, setMessage] = useState('')
+  const [previewTask, setPreviewTask] = useState<Task>()
 
   function editTask(value: Task, position: number) {
     setTask(value)
     setIndex(position)
-    setChoices('choices' in value.answer ? value.answer.choices.join('\n') : '')
-    setCorrect('choices' in value.answer ? value.answer.correct.map(i => i + 1).join(', ') : String(value.answer.correct))
+    setChoices(position < 0 ? '' : answerChoices(value.answer))
+    setCorrect(position < 0 ? '' : answerInput(value.answer))
     setPreviewTask(undefined)
     setMessage('')
   }
 
+  function editWorkedStep(position: number, field: keyof WorkedStep, value: string) {
+    setTask(current => ({
+      ...current,
+      workedSteps: current.workedSteps?.map((step, index) => index === position ? { ...step, [field]: value } : step),
+    }))
+  }
+
   function prepareTask(): Task | undefined {
     const fields = correct.split(',').map(value => value.trim())
-    const values = fields.map(Number)
-    let answer: Answer
     const type = task.answer.type
+    const values = fields.map(value => type === 'single' || type === 'multiple' ? Number(value) : parseNumber(value) ?? Number(value))
+    let answer: Answer
     const options = choices.split('\n').map(value => value.trim()).filter(Boolean)
-    if (!task.id.trim() || !task.prompt.trim() || !task.skill.trim() || !task.solution.trim()) return
     if (fields.some((value, i) => !value || !Number.isFinite(values[i]))) return
     if (type === 'number' && values.length === 1) answer = { type, correct: values[0] }
-    else if (type === 'vector' && values.length === 2) answer = { type, correct: [values[0], values[1]] }
+    else if ((type === 'vector' || type === 'root-pair') && values.length === 2) answer = { type, correct: [values[0], values[1]] }
     else if ((type === 'single' || type === 'multiple') && options.length >= 2 &&
       (type === 'multiple' || values.length === 1) && new Set(values).size === values.length &&
       values.every(value => Number.isInteger(value) && value >= 1 && value <= options.length)) {
       answer = { type, choices: options, correct: values.map(value => value - 1) }
     } else return
-    return { ...task, id: task.id.trim(), answer }
+    const candidate = { ...task, id: task.id.trim(), answer }
+    return isTask(candidate) ? candidate : undefined
   }
 
   function updateTask(save: boolean) {
     const candidate = prepareTask()
     if (!candidate || exercise.tasks.some((other, position) => position !== index && other.id === candidate.id)) {
-      setMessage(t('Check the task ID, skill, question, answer and worked solution. Task IDs must be unique.', '请检查步骤 ID、技能、题干、答案和解析。步骤 ID 须唯一。'))
+      setMessage(t('Check the task ID, skill, question, answer and worked solution. Complete all three fields in each written step.', '请检查步骤 ID、技能、题干、答案和解析。每行书写步骤需要填写公式、英文说明和中文说明。'))
       return
     }
     setPreviewTask(candidate)
@@ -70,8 +94,7 @@ export function TeacherEditor({ t, preview }: Props) {
       setMessage(t('Enter an exercise ID and title, and save at least one step.', '请填写练习 ID 和标题，并至少保存一个步骤。'))
       return
     }
-    const { exercises: _, ...metadata } = bank
-    const url = URL.createObjectURL(new Blob([JSON.stringify({ ...metadata, exercises: [exercise] }, null, 2)], { type: 'application/json' }))
+    const url = URL.createObjectURL(new Blob([serializeDraft(exercise)], { type: 'application/json' }))
     const link = document.createElement('a')
     link.href = url
     link.download = 'mushroom-exercise.json'
@@ -152,17 +175,38 @@ export function TeacherEditor({ t, preview }: Props) {
         <label>{t('Answer type', '答案类型')}<select value={task.answer.type} onChange={event => {
           const type = event.target.value
           const answer: Answer = type === 'single' || type === 'multiple' ? { type, choices: [], correct: [] }
-            : type === 'vector' ? { type, correct: [0, 0] } : { type: 'number', correct: 0 }
+            : type === 'vector' || type === 'root-pair' ? { type, correct: [0, 0] } : { type: 'number', correct: 0 }
           setTask({ ...task, answer })
           setCorrect('')
-        }}><option value="number">{t('Number', '数值')}</option><option value="vector">{t('Column vector', '列向量')}</option><option value="single">{t('Single choice', '单选')}</option><option value="multiple">{t('Multiple choice', '多选')}</option></select></label>
+        }}><option value="number">{t('Number', '数值')}</option><option value="root-pair">{t('Two distinct roots', '两个不同的根')}</option><option value="vector">{t('Column vector', '列向量')}</option><option value="single">{t('Single choice', '单选')}</option><option value="multiple">{t('Multiple choice', '多选')}</option></select></label>
         {'choices' in task.answer && <label>{t('Choices (one per line)', '选项（每行一个）')}<textarea value={choices} onChange={event => setChoices(event.target.value)} /></label>}
         <label>{t('Correct answer', '正确答案')}<input value={correct} onChange={event => setCorrect(event.target.value)} /></label>
         <small>{task.answer.type === 'vector' ? t('Enter the horizontal and vertical components, separated by a comma.', '按水平、竖直顺序填写，用英文逗号分隔。')
+          : task.answer.type === 'root-pair' ? t('Enter two different numbers or fractions, separated by a comma. Either order is accepted.', '填写两个不同的数值或分数，用英文逗号分隔。学生可以按任意顺序作答。')
           : 'choices' in task.answer ? t('Enter option numbers starting at 1, separated by commas.', '选项从 1 开始编号，多个答案用英文逗号分隔。')
           : t('Enter the answer as a number.', '请输入数值。')}</small>
         <label>{t('Worked solution', '解题过程')}<textarea value={task.solution} onChange={event => setTask({ ...task, solution: event.target.value })} /></label>
+        <fieldset className="editor-fields">
+          <legend>{t('Written solution steps', '解析书写步骤')}</legend>
+          <small>{t('Each row pairs one LaTeX line with a short explanation in both languages. Write the formula without dollar signs.', '每行填写一条 LaTeX 公式及中英文简要说明。公式无需美元符号。')}</small>
+          {task.workedSteps?.map((step, position) => <fieldset key={position} className="editor-fields">
+            <legend>{t('Row', '第')} {position + 1}{t('', ' 行')}</legend>
+            <label>{t('Formula', '公式')}<textarea value={step.math} onChange={event => editWorkedStep(position, 'math', event.target.value)} /></label>
+            <label>{t('Reason in English', '英文说明')}<input value={step.en} onChange={event => editWorkedStep(position, 'en', event.target.value)} /></label>
+            <label>{t('Reason in Chinese', '中文说明')}<input value={step.zh} onChange={event => editWorkedStep(position, 'zh', event.target.value)} /></label>
+            <button type="button" aria-label={t(`Remove row ${position + 1}`, `删除第 ${position + 1} 行`)}
+              onClick={() => setTask(current => ({
+                ...current, workedSteps: current.workedSteps?.filter((_, row) => row !== position),
+              }))}>{t('Remove row', '删除该行')}</button>
+          </fieldset>)}
+          <button type="button" onClick={() => setTask(current => ({
+            ...current, workedSteps: [...(current.workedSteps ?? []), emptyWorkedStep],
+          }))}>{t('Add written step', '添加书写步骤')}</button>
+        </fieldset>
+        <label>{t('Hint in English', '英文提示')}<input value={task.hint ?? ''} onChange={event => setTask({ ...task, hint: event.target.value || undefined })} /></label>
+        <label>{t('Hint in Chinese', '中文提示')}<input value={task.hintZh ?? ''} onChange={event => setTask({ ...task, hintZh: event.target.value || undefined })} /></label>
         <label>{t('Feedback for an incorrect answer', '答错时的反馈')}<input value={task.misconception} onChange={event => setTask({ ...task, misconception: event.target.value })} /></label>
+        <label>{t('Incorrect-answer feedback in Chinese', '答错时的中文反馈')}<input value={task.misconceptionZh ?? ''} onChange={event => setTask({ ...task, misconceptionZh: event.target.value || undefined })} /></label>
         <div className="actions"><button onClick={() => updateTask(false)}>{t('Preview step', '预览步骤')}</button><button className="button" onClick={() => updateTask(true)}>{t('Save step', '保存步骤')}</button></div>
         <div aria-live="polite">{message}</div>
       </section>

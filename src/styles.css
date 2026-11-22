@@ -80,3 +80,29 @@ main{padding:clamp(30px,6vw,76px) 0;min-height:70vh}h1,h2{font-family:Georgia,'S
   .solution-math .katex{font-size:1.02em}
   .question-numbers{gap:6px}
 }
+
+.worked-rows{list-style:none;margin:14px 0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.worked-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:center;gap:16px;padding:10px 14px}
+.worked-row+.worked-row{border-top:1px solid var(--line)}
+.worked-formula{min-width:0;overflow-x:auto;padding:3px 0}
+.worked-formula:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.worked-formula .katex-display{margin:0;text-align:left}
+.worked-formula .katex-display>.katex{text-align:left;white-space:nowrap;font-size:1.07em}
+.worked-row .worked-reason{margin:0;color:var(--ink);font-size:.93rem}
+.algebra-diagram{margin:16px 0 0;padding:14px;border:1px solid var(--line);border-radius:12px}
+.algebra-diagram figcaption{font-weight:700;margin-bottom:8px}
+.diagram-start{font-weight:600;margin-bottom:10px;border-left:3px solid currentColor;padding-left:9px}
+.diagram-branches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));list-style:none;gap:8px;margin:0;padding:0}
+.diagram-branches li{min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px}
+.diagram-branches li>span{font-size:.88rem}
+.diagram-arrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.root-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:410px}
+.root-fields input{width:100%;min-height:44px}
+.math-hint{padding:10px 0;margin:0}
+.guided-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.guided-header p{margin:0}
+@media(max-width:680px){
+  .worked-row{grid-template-columns:1fr;gap:6px;padding:10px}
+  .worked-formula .katex-display>.katex{font-size:1.02em}
+  .diagram-branches{grid-template-columns:1fr}
+}

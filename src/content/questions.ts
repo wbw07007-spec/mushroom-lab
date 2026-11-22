@@ -1,13 +1,21 @@
 export type Answer = { type: 'single' | 'multiple'; choices: string[]; correct: number[] }
   | { type: 'number'; correct: number }
   | { type: 'vector'; correct: [number, number] }
+  | { type: 'root-pair'; correct: [number, number] }
 export type Task = {
   id: string; skill: string; difficulty: 'foundation' | 'standard'; prompt: string;
   answer: Answer; solution: string; misconception: string;
   solutionLines?: string[]
+  workedSteps?: { math: string; en: string; zh: string }[]
+  hint?: string
+  hintZh?: string
+  misconceptionZh?: string
   signGraph?: { roots: [number, number]; labels: [string, string]; variable: string; quantity?: string; region: 'inside' | 'outside' };
 }
-export type Exercise = { id: string; title: string; context?: string; tasks: Task[] }
+export type Exercise = {
+  id: string; title: string; context?: string; tasks: Task[]
+  syllabusSection?: { chapter: string; topic: string }
+}
 
 export const bank = {
   syllabus: '9709', years: '2026–2027', component: 'P1', chapter: '1.2 Functions',
@@ -174,6 +182,22 @@ export const bank = {
 }
 
 export const glossary: Record<string, string> = {
+  'constant term': '常数项。这个项不含未知数，书写时保留正负号。',
+  'factorisation': '因式分解。把一个式子写成若干因式的乘积。',
+  'factorise': '作因式分解，把这个式子写成乘积。',
+  'factor': '因式。乘积中的一个相乘式子。',
+  'coefficient': '系数，表示乘在变量或变量的幂前面的带符号数。',
+  'smaller root': '方程的较小根。将两根按数值比较后取较小者。',
+  'larger root': '方程的较大根。将两根按数值比较后取较大者。',
+  'roots': '方程的根，也就是使该方程成立的未知数取值。',
+  'root': '方程的根，也就是使该方程成立的未知数取值。',
+  'both sides': '等式的两边，指等号左边和右边。',
+  'right-hand side': '等号右边。整理成标准形式时，要让这边等于零。',
+  'zero-product rule': '零乘积法则。如果一个乘积等于零，则至少有一个因式等于零。',
+  'like terms': '同类项，变量及其次数相同的项。',
+  'solve': '求解，找出使方程成立的未知数取值。',
+  'either order': '任意顺序。两个根的输入次序不影响判分。',
+  'enter': '填写答案。',
   'standard form': '标准形式。这里指二次方程形如 ax² + bx + c = 0。',
   'constant': '常数项，不含未知数的项。保留它的正负号。',
   'subtract': '减去。等式两边应减去同一个量或式子。',

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import katex from 'katex'
-import { factorisationExercises, standardFormTasks } from './content/quadratics-foundation.ts'
+import { factorisationExercises, q8Independent, standardFormTasks } from './content/quadratics-foundation.ts'
 import { countCompletedQuestions, readSectionCursor, writeSectionCursor } from './section-progress.ts'
 
 const first = { id: 'q-1', tasks: [{ id: 's-1a' }, { id: 's-1b' }, { id: 's-1c' }] }
@@ -76,4 +76,27 @@ test('aligned worked solutions typeset for every existing and new section step',
     assert.doesNotThrow(() => katex.renderToString(source, { displayMode: true }), task.id)
   }
   assert.equal(new Set(entries.map(({ task }) => task.id)).size, entries.length)
+})
+
+test('paired rows cover all Q3, Q7 and Q8 steps and render both languages', () => {
+  const q7 = factorisationExercises[2]
+  const q8 = factorisationExercises[3]
+  const tasks = [standardFormTasks[2].task, ...q7.steps.map(step => step.task),
+    q8Independent, ...q8.steps.map(step => step.task)]
+  for (const task of tasks) {
+    assert.ok(task.workedSteps.length > 0, task.id)
+    for (const { math, en, zh } of task.workedSteps) {
+      assert.ok(math && en && zh, task.id)
+      assert.doesNotThrow(() => katex.renderToString(math, { displayMode: true }), task.id)
+      for (const explanation of [en, zh]) {
+        assert.equal((explanation.match(/\$/g) ?? []).length % 2, 0, task.id)
+        for (const formula of explanation.matchAll(/\$([^$]+)\$/g)) {
+          assert.doesNotThrow(() => katex.renderToString(formula[1]), task.id)
+        }
+      }
+    }
+  }
+  assert.deepEqual(q8Independent.answer.correct, [-4, 1])
+  assert.ok(q8Independent.answer.correct.every(x => 2*x*x+6*x+1 === 9))
+  assert.notEqual(q8Independent.id, q8.steps[0].task.id)
 })

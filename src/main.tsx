@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import katex from 'katex'
@@ -12,12 +12,15 @@ import { ChordOfContactDiagram } from './ChordOfContactDiagram'
 import { bank, glossary } from './content/questions'
 import { practiceTopics } from './content/practice-topics'
 import type { Exercise, Task } from './content/questions'
-import { grade } from './grading'
+import { grade, sameNumericInput } from './grading'
 import { applyAttempt, completionMethod, emptyHistory, readHistory, writeHistory } from './attempt-history'
 import type { AttemptEvent } from './attempt-history'
-import { factorisationExercises, standardFormRoute, standardFormTasks } from './content/quadratics-foundation'
+import { factorisationExercises, q8Independent, standardFormRoute, standardFormTasks } from './content/quadratics-foundation'
 import { quadraticsChapter } from './content/quadratics-sections'
 import { countCompletedQuestions, readSectionCursor, writeSectionCursor } from './section-progress'
+import { readDrafts } from './teacher-drafts'
+import { AlgebraDiagram } from './AlgebraDiagram'
+import type { DiagramKind } from './AlgebraDiagram'
 
 const pages = [
   ['home', 'Home', '首页'], ['academy', 'Academy', '课程'],
@@ -32,7 +35,29 @@ const lessonQuestions: LessonQuestion[] = [
     steps: [entry],
   })),
   ...factorisationExercises,
-].map(question => ({ ...question, tasks: question.steps.map(entry => entry.task) }))
+].map(question => ({
+  ...question,
+  tasks: [
+    ...(question.id === 'p1-quad-foundation-rearrange-factor' ? [q8Independent] : []),
+    ...question.steps.map(entry => entry.task),
+  ],
+}))
+const lessonCompletion = lessonQuestions.map(question => ({
+  id: question.id,
+  tasks: question.tasks[0].id === q8Independent.id ? [q8Independent] : question.tasks,
+}))
+const teacherSamples = Object.fromEntries([3, 7, 8].map(number => {
+  const question = lessonQuestions[number - 1]
+  const id = 'quadratics-sample-q' + number
+  const exercise: Exercise = {
+    id,
+    title: 'Quadratics 1.1 · Q' + number,
+    syllabusSection: { chapter: '1.1 Quadratics', topic: firstSection.title[0] },
+    context: number === 8 ? undefined : question.context,
+    tasks: question.tasks,
+  }
+  return ['teacher-q'+number, exercise]
+}))
 const tasks = [...practiceTopics.flatMap(topic => topic.tasks), ...lessonQuestions.flatMap(question => question.tasks)]
 const storageKey = 'mushroom:p1:' + bank.version
 const syllabus = 'https://www.cambridgeinternational.org/Images/697427-2026-2027-syllabus.pdf'
@@ -60,11 +85,12 @@ function MathText({ value, translate = false }: {value: string; translate?: bool
 
 function Term({ word }: { word: string }) {
   const [open, setOpen] = useState(false)
+  const tooltipId = useId()
   return <span className="term">
-    <button type="button" className="term-button" aria-expanded={open}
-      onClick={() => setOpen(!open)} onBlur={() => setOpen(false)}
+    <button type="button" className="term-button" aria-expanded={open} aria-describedby={tooltipId}
+      onClick={event => { event.stopPropagation(); setOpen(!open) }} onBlur={() => setOpen(false)}
       onKeyDown={event => { if (event.key === 'Escape') setOpen(false) }}>{word}</button>
-    <span className="definition" role="tooltip" lang="zh-CN">{glossary[word.toLowerCase()]}</span>
+    <span id={tooltipId} className="definition" role="tooltip" lang="zh-CN">{glossary[word.toLowerCase()]}</span>
   </span>
 }
 
@@ -78,6 +104,7 @@ function readProgress(): string[] {
 function App() {
   const [page, setPage] = useState(location.hash.slice(1) || 'home')
   const practiceTopic = practiceTopics.find(topic => topic.id === page)
+  const teacherSample = Object.hasOwn(teacherSamples, page) ? teacherSamples[page] : undefined
   const lessonOpen = page === firstSection.id || page === standardFormRoute
   const inChapter = page === quadraticsChapter.id || lessonOpen
   const [zh, setZh] = useState(false)
@@ -164,9 +191,12 @@ function App() {
     {practiceTopic && <Practice key={practiceTopic.id} topicId={practiceTopic.id} t={t} progress={progress} complete={complete}
       exercises={practiceTopic.exercises} topicTasks={practiceTopic.tasks} title={t(practiceTopic.title[0], practiceTopic.title[1])} />}
     {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
-    {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
-      <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
-    {page !== 'teacher' && page !== 'past-papers' && !inChapter && !practiceTopic && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
+    {(page === 'teacher' || teacherSample) && <>
+      {teacherSample && <p><a href={'#'+firstSection.id}>{t('Return to the student exercise', '返回学生练习')}</a></p>}
+      <TeacherEditor key={page} sample={teacherSample} t={t} preview={(task, context) =>
+        <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />
+    </>}
+    {page !== 'teacher' && !teacherSample && page !== 'past-papers' && !inChapter && !practiceTopic && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
     </main>
     <footer><strong>Mushroom Lab</strong><a href="#teacher">{t('Question Builder','教师题目编辑器')}</a><span>{t('Explore Mathematics Differently.','蘑菇数学实验室')}</span></footer>
   </>
@@ -222,10 +252,12 @@ function Practice({ t, progress, complete, exercises, topicTasks, title, topicId
   </>
 }
 
-function Question({ task, context, step, questionLabel, diagram, t, onCorrect, previous, next, track = false, legacyCompleted = false, hint, commonMistake }: {
+function Question({ task, context, step, questionLabel, diagram, solutionDiagram, afterCorrect, onScaffold, draft, t, onCorrect, previous, next, track = false, legacyCompleted = false, hint, hintZh, commonMistake }: {
   task: Task; context?: string; step?: string; questionLabel?: string; diagram?: ReactNode; t: PracticeProps['t'];
   onCorrect: () => void; previous?: () => void; next?: () => void
-  track?: boolean; legacyCompleted?: boolean; hint?: string; commonMistake?: { answer: number; hint: string }
+  track?: boolean; legacyCompleted?: boolean; hint?: string; hintZh?: string
+  commonMistake?: { answer: number; hint: string; zh?: string }
+  solutionDiagram?: DiagramKind; afterCorrect?: DiagramKind; onScaffold?: () => void; draft?: boolean
 }) {
   const [response, setResponse] = useState<number[]>([])
   const formInput = useRef<HTMLInputElement>(null)
@@ -233,10 +265,21 @@ function Question({ task, context, step, questionLabel, diagram, t, onCorrect, p
   const [vector, setVector] = useState<[string, string]>(['', ''])
   const [feedback, setFeedback] = useState<'ready'|'correct'|'retry'|'missing'>('ready')
   const [history, setHistory] = useState(() => track ? readHistory(browserStorage, task.id) : emptyHistory)
-  const [hintText, setHintText] = useState('')
+  const [hintOpen, setHintOpen] = useState(false)
   const [solutionOpen, setSolutionOpen] = useState(false)
   const method = completionMethod(history, legacyCompleted)
   const answer = task.answer
+  const pair = answer.type === 'root-pair'
+  const mistake = commonMistake && grade({ type: 'number', correct: commonMistake.answer }, number)
+    ? commonMistake : undefined
+  const mathHint = mistake
+    ? t(mistake.hint, mistake.zh ?? hintZh ?? task.hintZh ?? mistake.hint)
+    : t(hint ?? task.hint ?? task.misconception, hintZh ?? task.hintZh ?? task.misconceptionZh ?? hint ?? task.hint ?? task.misconception)
+  const errorDetail = pair && sameNumericInput(...vector)
+    ? t('You entered the same root twice. Enter two different roots.', '你填了两个相同的根。请分别填写两个不同的根。')
+    : mistake
+      ? t(mistake.hint, mistake.zh ?? task.misconceptionZh ?? mistake.hint)
+      : task.misconceptionZh ? t(task.misconception, task.misconceptionZh) : undefined
 
   function remember(event: AttemptEvent) {
     if (!track) return
@@ -246,8 +289,7 @@ function Question({ task, context, step, questionLabel, diagram, t, onCorrect, p
   }
 
   function showHint() {
-    const matchesMistake = commonMistake && grade({ type: 'number', correct: commonMistake.answer }, number)
-    setHintText(matchesMistake ? commonMistake.hint : hint ?? task.misconception)
+    setHintOpen(true)
     remember('hint')
   }
 
@@ -257,7 +299,7 @@ function Question({ task, context, step, questionLabel, diagram, t, onCorrect, p
   }
   function submit(event: FormEvent) {
     event.preventDefault()
-    const result = grade(answer, answer.type === 'vector' ? vector : answer.type === 'number' ? number : response)
+    const result = grade(answer, answer.type === 'vector' || pair ? vector : answer.type === 'number' ? number : response)
     setFeedback(result === null ? 'missing' : result ? 'correct' : 'retry')
     if (result !== null) remember(result ? 'correct' : 'incorrect')
     if (result) onCorrect()
@@ -271,7 +313,22 @@ function Question({ task, context, step, questionLabel, diagram, t, onCorrect, p
       {t('Valid attempts', '有效尝试')} {history.attempts}
     </p>}
     <form onSubmit={submit}><fieldset><legend><MathText value={task.prompt} translate /></legend>
-      {answer.type === 'vector'
+      {pair
+        ? <div className="root-pair">
+            <p>{t('Enter the two roots in either order.', '按任意顺序填写两个根。')}</p>
+            <div className="root-fields">
+              {([0, 1] as const).map(index => <label className="numeric" key={index}>
+                {t('Root field ' + (index + 1), '根的输入框 ' + (index + 1))}
+                <input ref={index === 0 ? formInput : undefined} autoComplete="off" value={vector[index]} onChange={event => {
+                  const updated: [string, string] = [...vector]
+                  updated[index] = event.target.value
+                  setVector(updated)
+                  setFeedback('ready')
+                }} />
+              </label>)}
+            </div>
+          </div>
+        : answer.type === 'vector'
         ? <div className="vector-entry">
             <p>{t('Translation by the vector','平移向量')}</p>
             <div className="column-vector">
@@ -280,11 +337,11 @@ function Question({ task, context, step, questionLabel, diagram, t, onCorrect, p
             </div>
           </div>
         : answer.type === 'number'
-        ? <label className="numeric">{t('Enter a number or fraction','输入数值或分数')}<input ref={formInput} autoComplete="off" value={number} onChange={event => {setNumber(event.target.value); setFeedback('ready'); setHintText('')}} /></label>
+        ? <label className="numeric">{t('Enter a number or fraction','输入数值或分数')}<input ref={formInput} autoComplete="off" value={number} onChange={event => {setNumber(event.target.value); setFeedback('ready'); setHintOpen(false)}} /></label>
         : answer.choices.map((choice, i) => <label className="choice" key={choice}>
             <input name="answer" type={answer.type === 'single' ? 'radio' : 'checkbox'} checked={response.includes(i)}
               onChange={event => {setFeedback('ready'); setResponse(answer.type === 'single' ? [i] : event.target.checked ? [...response,i] : response.filter(value => value !== i))}} />
-            <MathText value={choice} />
+            <MathText value={choice} translate />
           </label>)}</fieldset>
       <div className="actions"><button className="button" type="submit">{t('Check answer','检查答案')}</button>
         {previous && <button type="button" onClick={previous}>{t('Previous','上一步')}</button>}
@@ -292,20 +349,31 @@ function Question({ task, context, step, questionLabel, diagram, t, onCorrect, p
     </form>
     <div aria-live="polite">{feedback === 'correct' && <div className="feedback"><strong>{t('Correct','回答正确')}</strong></div>}
     {feedback === 'retry' && <div className="feedback retry"><strong>{t('Try again','再试一次')}</strong>
+      {errorDetail && <p><MathText value={errorDetail} translate /></p>}
       {track
         ? <div className="actions">
-            <button type="button" onClick={() => { setFeedback('ready'); setHintText(''); formInput.current?.focus() }}>{t('Retry without help', '自行订正')}</button>
-            <button type="button" onClick={showHint}>{t('Show hint', '看提示')}</button>
+            <button type="button" onClick={() => { setFeedback('ready'); setHintOpen(false); formInput.current?.focus() }}>{t('Retry without help', '自行订正')}</button>
+            {!pair && <button type="button" onClick={showHint}>{t('Show hint', '看提示')}</button>}
           </div>
         : <> · {task.misconception}</>}
-      {hintText && <p><MathText value={hintText} /></p>}
     </div>}
     {feedback === 'missing' && <p className="feedback retry">{answer.type === 'vector'
       ? t('Enter a valid number in both rows of the column vector.','请在列向量的上下两行分别输入有效数值。')
-      : t('Enter a valid answer or select an option.','请输入有效答案或选择选项。')}</p>}</div>
+      : pair ? t('Enter a valid number or fraction in both root fields.', '请在两个根的输入框中各填一个有效数值或分数。')
+        : t('Enter a valid answer or select an option.','请输入有效答案或选择选项。')}</p>}</div>
+    {pair && <div className="actions">
+      <button type="button" onClick={showHint}>{t('Give me a hint', '给我一点提示')}</button>
+      {onScaffold && <button type="button" onClick={onScaffold}>{t('Use guided steps', '打开分步练习')}</button>}
+    </div>}
+    {hintOpen && <p className="math-hint" aria-live="polite"><MathText value={mathHint} translate /></p>}
+    {afterCorrect && history.completed && <AlgebraDiagram kind={afterCorrect} t={t} />}
     <div className="worked-solution">
       <button type="button" aria-expanded={solutionOpen} onClick={toggleSolution}>{solutionOpen ? t('Hide worked solution', '收起完整解析') : t('Worked Solution', '查看完整解析')}</button>
-      {solutionOpen && <WorkedSolution task={task} t={t} />}
+      {solutionOpen && <>
+        {draft && <p className="attempt-meta">{t('Worked solution from the draft saved in this browser.', '正在显示此浏览器保存的解析草稿。')}</p>}
+        <WorkedSolution task={task} t={t} />
+        {solutionDiagram && <AlgebraDiagram kind={solutionDiagram} t={t} />}
+      </>}
     </div>
   </article>
 }
@@ -322,7 +390,7 @@ const completionLabels = {
   legacy: ['Completed · method unknown', '已完成，作答方式未知'],
 } as const
 
-type LessonStep = { task: Task; hint: string; commonMistake?: { answer: number; hint: string } }
+type LessonStep = { task: Task; hint: string; hintZh?: string; commonMistake?: { answer: number; hint: string; zh?: string } }
 type LessonQuestion = {
   id: string
   skill: readonly [string, string]
@@ -333,7 +401,15 @@ type LessonQuestion = {
 
 function WorkedSolution({ task, t }: { task: Task; t: PracticeProps['t'] }) {
   return <div className="solution-body">
-    {Array.isArray(task.solutionLines) && task.solutionLines.length > 0 && task.solutionLines.every(line => typeof line === 'string')
+    {task.workedSteps?.length
+      ? <ol className="worked-rows" aria-label={t('Mathematical steps and explanations', '逐行数学解答')}>
+          {task.workedSteps.map((row, index) => <li className="worked-row" key={index}>
+            <div className="worked-formula" tabIndex={0} role="region" aria-label={t('Calculation ' + (index+1), '第 ' + (index+1) + ' 行算式')}
+              dangerouslySetInnerHTML={{ __html: row.math ? katex.renderToString(row.math, { displayMode: true, throwOnError: false }) : '' }} />
+            <p className="worked-reason"><MathText value={t(row.en, row.zh || row.en)} translate /></p>
+          </li>)}
+        </ol>
+      : Array.isArray(task.solutionLines) && task.solutionLines.length > 0 && task.solutionLines.every(line => typeof line === 'string')
       ? <div className="solution-math" role="region" aria-label={t('Written mathematical steps', '数学书写步骤')} tabIndex={0}
           dangerouslySetInnerHTML={{ __html: katex.renderToString(
             String.raw`\begin{aligned}` + task.solutionLines.join(String.raw`\\`) + String.raw`\end{aligned}`,
@@ -389,7 +465,7 @@ function QuadraticsDirectory({ t, completed }: Pick<PracticeProps, 't'> & { comp
             {questions.length
               ? <a href={'#'+section.id}>{t(section.title[0], section.title[1])}</a>
               : <span>{t(section.title[0], section.title[1])}</span>}
-            <p className="attempt-meta">{t('Completed', '已完成')} {countCompletedQuestions(questions, completed)}/{questions.length}{' · '}
+            <p className="attempt-meta">{t('Completed', '已完成')} {countCompletedQuestions(questions.length ? lessonCompletion : [], completed)}/{questions.length}{' · '}
               {questions.length ? t(questions.length + ' questions', questions.length + ' 道题') : t('Practice not yet available', '暂无本节练习')}
             </p>
           </div>
@@ -411,20 +487,36 @@ function FactorisationPractice({ t, completed, complete }: Pick<PracticeProps, '
   const questionIndex = lessonQuestions.findIndex(question => question.id === cursor.questionId)
   const question = lessonQuestions[questionIndex]
   const stepIndex = question.steps.findIndex(entry => entry.task.id === cursor.taskId)
-  const active = question.steps[stepIndex]
+  const independentQuestion = question.tasks[0].id === q8Independent.id
+  const independentMode = cursor.taskId === q8Independent.id
+  const active: LessonStep = independentMode
+    ? { task: q8Independent, hint: q8Independent.hint ?? q8Independent.misconception, hintZh: q8Independent.hintZh }
+    : question.steps[stepIndex]
+  const sampleRoute = [3, 7, 8].includes(questionIndex + 1) ? 'teacher-q' + (questionIndex+1) : undefined
+  const sample = sampleRoute ? teacherSamples[sampleRoute] : undefined
+  const saved = sample && readDrafts(browserStorage).find(draft => draft.id === sample.id)
+    ?.tasks.find(task => task.id === active.task.id)
+  const visibleTask = saved ? { ...active.task, solution: saved.solution, workedSteps: saved.workedSteps, solutionLines: saved.solutionLines } : active.task
   const total = lessonQuestions.length
-  const completeCount = countCompletedQuestions(lessonQuestions, completed)
+  const completeCount = countCompletedQuestions(lessonCompletion, completed)
 
-  useEffect(() => { writeSectionCursor(browserStorage, firstSection.id, cursor) }, [cursor])
+  useEffect(() => {
+    writeSectionCursor(browserStorage, firstSection.id, cursor)
+    if (independentQuestion && !independentMode) {
+      const history = readHistory(browserStorage, q8Independent.id)
+      writeHistory(browserStorage, q8Independent.id, applyAttempt(history, 'hint'))
+    }
+  }, [cursor, independentQuestion, independentMode])
 
   function goToQuestion(index: number) {
     const target = lessonQuestions[index]
-    const task = target.tasks.find(item => !completed.has(item.id)) ?? target.tasks[0]
+    const task = target.tasks[0].id === q8Independent.id
+      ? q8Independent : target.tasks.find(item => !completed.has(item.id)) ?? target.tasks[0]
     setCursor({ questionId: target.id, taskId: task.id })
   }
 
   function goToStep(index: number) {
-    setCursor({ questionId: question.id, taskId: question.tasks[index].id })
+    setCursor({ questionId: question.id, taskId: question.steps[index].task.id })
   }
 
   return <section className="foundation-practice">
@@ -435,7 +527,7 @@ function FactorisationPractice({ t, completed, complete }: Pick<PracticeProps, '
     <p className="attempt-meta" aria-live="polite">{t('Completed', '已完成')} {completeCount}/{total}</p>
     <nav className="question-numbers" aria-label={t('Section question numbers', '本节题号')}>
       {lessonQuestions.map((item, index) => {
-        const done = item.tasks.every(task => completed.has(task.id))
+        const done = lessonCompletion[index].tasks.every(task => completed.has(task.id))
         return <button key={item.id} type="button" onClick={() => goToQuestion(index)}
           aria-current={index === questionIndex ? 'step' : undefined}
           aria-label={t('Question ' + (index + 1), '第 ' + (index + 1) + ' 题') + (done ? t(', completed', '，已完成') : '')}>
@@ -453,17 +545,31 @@ function FactorisationPractice({ t, completed, complete }: Pick<PracticeProps, '
         'For $x^2+2x-3=4$, subtract 4 to get $x^2+2x-7=0$. The new constant is $-7$.',
         '例如，在 $x^2+2x-3=4$ 中，两边减去 4 得 $x^2+2x-7=0$，所以常数项为 $-7$。')} /></p>
     </details>}
-    <Question key={active.task.id} task={active.task} context={question.context}
+    {independentQuestion && !independentMode && <div className="guided-header">
+      <p>{t('Guided practice', '分步练习')} · {question.steps.filter(entry => completed.has(entry.task.id)).length}/{question.steps.length}</p>
+      <button type="button" onClick={() => setCursor({ questionId: question.id, taskId: q8Independent.id })}>
+        {t('Return to both root fields', '返回整题填写两根')}
+      </button>
+    </div>}
+    <Question key={active.task.id} task={visibleTask} context={independentMode ? undefined : question.context}
       questionLabel={t('Question ', '第 ') + (questionIndex + 1) + '/' + total + t('', ' 题')}
-      step={question.steps.length > 1 ? (stepIndex + 1) + '/' + question.steps.length : undefined}
-      t={t} track legacyCompleted={completed.has(active.task.id)} hint={active.hint} commonMistake={active.commonMistake}
+      step={!independentMode && question.steps.length > 1 ? (stepIndex + 1) + '/' + question.steps.length : undefined}
+      draft={Boolean(saved)}
+      solutionDiagram={questionIndex === 2 ? 'move-sign' : questionIndex === 6 && question.tasks.every(task => completed.has(task.id)) ? 'zero-product' : undefined}
+      afterCorrect={independentMode ? 'factor-roots' : undefined}
+      onScaffold={independentMode ? () => {
+        const nextGuided = question.steps.findIndex(entry => !completed.has(entry.task.id))
+        goToStep(nextGuided < 0 ? 0 : nextGuided)
+      } : undefined}
+      t={t} track legacyCompleted={completed.has(active.task.id)} hint={active.hint} hintZh={active.hintZh} commonMistake={active.commonMistake}
       previous={stepIndex > 0 ? () => goToStep(stepIndex - 1) : undefined}
-      next={stepIndex + 1 < question.steps.length ? () => goToStep(stepIndex + 1) : undefined}
+      next={!independentMode && stepIndex + 1 < question.steps.length ? () => goToStep(stepIndex + 1) : undefined}
       onCorrect={() => complete(active.task.id)} />
     <div className="actions section-navigation">
       <button type="button" disabled={questionIndex === 0} onClick={() => goToQuestion(questionIndex - 1)}>{t('Previous question', '上一题')}</button>
       <button type="button" disabled={questionIndex === total - 1} onClick={() => goToQuestion(questionIndex + 1)}>{t('Next question', '下一题')} →</button>
     </div>
+    {sampleRoute && <p className="attempt-meta"><a href={'#'+sampleRoute}>{t('Edit this sample locally', '在本地编辑样板')}</a></p>}
   </section>
 }
 
