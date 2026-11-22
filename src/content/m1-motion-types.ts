@@ -19,7 +19,8 @@ export type MotionPlot =
   }
 
 export type MotionPart = { prompt: string; answer: number; feedback: Bilingual } &
-  ({ unit?: string; choices?: never } | { choices: string[]; unit?: never })
+  ({ unit?: string; choices?: never; choiceFeedback?: never } |
+    { choices: string[]; choiceFeedback?: Partial<Record<number, Bilingual>>; unit?: never })
 
 export type MotionQuestion = {
   id: string

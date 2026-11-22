@@ -12,6 +12,7 @@ import { MotionPlot } from './MotionPlot'
 import './motion.css'
 
 type Translate = (en: string, zh: string) => string
+type Responses = Partial<Record<number, string | number>>
 const pdf = import.meta.env.BASE_URL + 'study-notes/m1-01.pdf'
 const storage = {
   getItem: (key: string) => window.localStorage.getItem(key),
@@ -38,13 +39,14 @@ function getCursor(section: MotionSection) {
 function MotionExercise({ question, history, t, mark }: {
   question: MotionQuestion; history: AttemptHistory; t: Translate; mark: (event: AttemptEvent) => void
 }) {
-  const [responses, setResponses] = useState<Partial<Record<number, string | number>>>({})
-  const [results, setResults] = useState<(boolean | null)[]>()
+  const [responses, setResponses] = useState<Responses>({})
+  const [submission, setSubmission] = useState<{ responses: Responses; results: (boolean | null)[] }>()
   const [showHint, setShowHint] = useState(false)
   const [showSolution, setShowSolution] = useState(false)
   const method = completionMethod(history, false)
-  const correct = results?.every(result => result === true)
-  const invalid = results?.includes(null)
+  const correct = submission?.results.every(result => result === true)
+  const invalid = submission?.results.includes(null)
+  const showStatus = submission && question.parts.every((_, index) => submission.responses[index] === responses[index])
 
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -53,7 +55,7 @@ function MotionExercise({ question, history, t, mark }: {
       if (part.choices) return typeof response === 'number' ? response === part.answer : null
       return grade({ type: 'number', correct: part.answer }, typeof response === 'string' ? response : '')
     })
-    setResults(next)
+    setSubmission({ responses, results: next })
     if (!next.includes(null)) mark(next.every(Boolean) ? 'correct' : 'incorrect')
   }
   function answer(index: number, value: string | number) {
@@ -66,34 +68,39 @@ function MotionExercise({ question, history, t, mark }: {
     <div lang="en" className="motion-prompt"><MotionText value={question.prompt} /></div>
     {question.plot && <MotionPlot plot={question.plot} />}
     <form onSubmit={submit}>
-      {question.parts.map((part, index) => <fieldset key={index} lang="en" className="motion-part">
-        <legend>{question.parts.length > 1 && <span className="motion-part-letter">({String.fromCharCode(97 + index)}) </span>}<MotionText value={part.prompt} /></legend>
-        {part.choices ? (
-          <div className={question.candidates ? 'motion-candidates' : 'motion-choice-list'}>
-            {part.choices.map((choice, i) => {
-              const id = question.id + '-part-' + index + '-option-' + i
-              const graph = question.candidates?.[i]
-              return <div className="motion-choice" key={choice}>
-                <div className="motion-choice-label">
-                  <input id={id} type="radio" name={question.id + '-part-' + index}
-                    aria-labelledby={id+'-label'} checked={responses[index] === i} onChange={() => answer(index, i)} />
-                  {graph ? <label htmlFor={id} id={id+'-label'}>{choice}</label>
-                    : <span id={id+'-label'} onClick={event => {
-                        if (!(event.target as Element).closest('button')) answer(index, i)
-                      }}><MotionText value={choice} /></span>}
+      {question.parts.map((part, index) => {
+        const submitted = submission?.responses[index]
+        const wrong = !invalid && submission?.results[index] === false && submitted === responses[index]
+        const feedback = (typeof submitted === 'number' ? part.choiceFeedback?.[submitted] : undefined) ?? part.feedback
+        return <fieldset key={index} lang="en" className="motion-part">
+          <legend>{question.parts.length > 1 && <span className="motion-part-letter">({String.fromCharCode(97 + index)}) </span>}<MotionText value={part.prompt} /></legend>
+          {part.choices ? (
+            <div className={question.candidates ? 'motion-candidates' : 'motion-choice-list'}>
+              {part.choices.map((choice, i) => {
+                const id = question.id + '-part-' + index + '-option-' + i
+                const graph = question.candidates?.[i]
+                return <div className="motion-choice" key={choice}>
+                  <div className="motion-choice-label">
+                    <input id={id} type="radio" name={question.id + '-part-' + index}
+                      aria-labelledby={id+'-label'} checked={responses[index] === i} onChange={() => answer(index, i)} />
+                    {graph ? <label htmlFor={id} id={id+'-label'}>{choice}</label>
+                      : <span id={id+'-label'} onClick={event => {
+                          if (!(event.target as Element).closest('button')) answer(index, i)
+                        }}><MotionText value={choice} /></span>}
+                  </div>
+                  {graph && <label htmlFor={id} className="motion-graph-select"><MotionPlot plot={graph} /></label>}
                 </div>
-                {graph && <label htmlFor={id} className="motion-graph-select"><MotionPlot plot={graph} /></label>}
-              </div>
-            })}
-          </div>
-        ) : <label className="motion-number">
-          <span lang={t('en', 'zh-CN')}>{question.parts.length > 1 ? t('Answer ', '答案 ') + '(' + String.fromCharCode(97 + index) + ')' : t('Answer', '答案')}</span>
-          <input type="text" inputMode="text" autoComplete="off" spellCheck={false}
-            value={String(responses[index] ?? '')} onChange={event => answer(index, event.target.value)} />
-          {part.unit && <span className="motion-unit">{part.unit}</span>}
-        </label>}
-        {results?.[index] === false && !invalid && <p className="motion-part-feedback"><MotionText value={t(...part.feedback)} /></p>}
-      </fieldset>)}
+              })}
+            </div>
+          ) : <label className="motion-number">
+            <span lang={t('en', 'zh-CN')}>{question.parts.length > 1 ? t('Answer ', '答案 ') + '(' + String.fromCharCode(97 + index) + ')' : t('Answer', '答案')}</span>
+            <input type="text" inputMode="text" autoComplete="off" spellCheck={false}
+              value={String(responses[index] ?? '')} onChange={event => answer(index, event.target.value)} />
+            {part.unit && <span className="motion-unit">{part.unit}</span>}
+          </label>}
+          {wrong && <p lang={t('en', 'zh-CN')} className="motion-part-feedback"><MotionText value={t(...feedback)} /></p>}
+        </fieldset>
+      })}
       <div className="actions motion-actions">
         <button type="submit" className="button">{t('Check answer', '检查答案')}</button>
         <button type="button" aria-expanded={showHint} onClick={() => {
@@ -102,7 +109,7 @@ function MotionExercise({ question, history, t, mark }: {
         }}>{showHint ? t('Hide hint', '收起提示') : t('Give me a hint', '给我一点提示')}</button>
       </div>
     </form>
-    {results && <div role="status" className={'feedback' + (correct ? '' : ' retry')}>
+    {showStatus && <div role="status" className={'feedback' + (correct ? '' : ' retry')}>
       {invalid ? t('Complete each part using a number, fraction or the choices shown.', '请完成每个小问，输入数值、分数或选择选项。')
         : correct ? t('Correct.', '答对了。') : t('Try again. Read the feedback beside each part and revise your answer.', '再试一次。参考各小问旁的反馈，自行订正。')}
     </div>}

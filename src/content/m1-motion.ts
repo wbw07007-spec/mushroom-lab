@@ -1,5 +1,8 @@
 import { motionBasics, motionDisplacement } from './m1-motion-basics.ts'
 import { motionIndependent, motionVelocity } from './m1-motion-advanced.ts'
+import { extraMotionBasics, extraMotionDisplacementA } from './m1-motion-extension-basics.ts'
+import { extraMotionDisplacementB, extraMotionVelocityA } from './m1-motion-extension-graphs.ts'
+import { extraMotionIndependent, extraMotionVelocityB } from './m1-motion-extension-review.ts'
 import type { Bilingual, MotionQuestion } from './m1-motion-types.ts'
 
 export type MotionSection = {
@@ -11,10 +14,14 @@ export type MotionSection = {
 
 export const motionTitle = ['Motion in a straight line', '直线运动'] as const
 export const motionSections: MotionSection[] = [
-  { id: 'm1-motion-basics', notePage: 1, title: ['Displacement, velocity & acceleration', '位移、速度与加速度'], questions: motionBasics },
-  { id: 'm1-motion-st', notePage: 3, title: ['Displacement–time graphs', '位移–时间图'], questions: motionDisplacement },
-  { id: 'm1-motion-vt', notePage: 5, title: ['Velocity–time graphs', '速度–时间图'], questions: motionVelocity },
-  { id: 'm1-motion-independent', title: ['Chapter independent practice', '章节独立练习'], questions: motionIndependent },
+  { id: 'm1-motion-basics', notePage: 1, title: ['Displacement, velocity & acceleration', '位移、速度与加速度'],
+    questions: [...motionBasics, ...extraMotionBasics] },
+  { id: 'm1-motion-st', notePage: 3, title: ['Displacement–time graphs', '位移–时间图'],
+    questions: [...motionDisplacement, ...extraMotionDisplacementA, ...extraMotionDisplacementB] },
+  { id: 'm1-motion-vt', notePage: 5, title: ['Velocity–time graphs', '速度–时间图'],
+    questions: [...motionVelocity, ...extraMotionVelocityA, ...extraMotionVelocityB] },
+  { id: 'm1-motion-independent', title: ['Chapter independent practice', '章节独立练习'],
+    questions: [...motionIndependent, ...extraMotionIndependent] },
 ]
 export const motionQuestions = motionSections.flatMap(section => section.questions)
 export const motionNoteSections = [
