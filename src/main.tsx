@@ -9,10 +9,13 @@ import { functionNotes } from './content/function-notes'
 import { TeacherEditor } from './TeacherEditor'
 import { SignGraph } from './SignGraph'
 import { ChordOfContactDiagram } from './ChordOfContactDiagram'
-import { bank, glossary } from './content/questions'
+import { bank } from './content/questions'
 import { practiceTopics } from './content/practice-topics'
 import type { Exercise, Task } from './content/questions'
 import { grade } from './grading'
+import { MathText } from './MathText'
+import { MotionPractice } from './MotionPractice'
+import { motionSections } from './content/m1-motion'
 
 const pages = [
   ['home', 'Home', '首页'], ['academy', 'Academy', '课程'],
@@ -32,27 +35,6 @@ const studyNotes = [
     ['Transformations and vectors', '变换与向量'], ['Probability', '概率'], ['Statistics', '统计'],
   ] },
 ] as const
-const terms = new RegExp('\\b(' + Object.keys(glossary).sort((a, b) => b.length - a.length).join('|') + ')\\b', 'gi')
-
-function MathText({ value, translate = false }: {value: string; translate?: boolean}) {
-  return value.split('$').map((part, i) => {
-    if (i % 2) return <span key={i} dangerouslySetInnerHTML={{__html: katex.renderToString(part, {throwOnError: false})}} />
-    if (!translate) return part
-    return part.split(terms).map((word, j) => j % 2
-      ? <Term key={i + '-' + j} word={word} />
-      : word)
-  })
-}
-
-function Term({ word }: { word: string }) {
-  const [open, setOpen] = useState(false)
-  return <span className="term">
-    <button type="button" className="term-button" aria-expanded={open}
-      onClick={() => setOpen(!open)} onBlur={() => setOpen(false)}
-      onKeyDown={event => { if (event.key === 'Escape') setOpen(false) }}>{word}</button>
-    <span className="definition" role="tooltip" lang="zh-CN">{glossary[word.toLowerCase()]}</span>
-  </span>
-}
 
 function readProgress(): string[] {
   try {
@@ -64,6 +46,8 @@ function readProgress(): string[] {
 function App() {
   const [page, setPage] = useState(location.hash.slice(1) || 'home')
   const practiceTopic = practiceTopics.find(topic => topic.id === page)
+  const motionPage = ['m1', 'm1-motion', 'm1-motion-notes'].includes(page)
+    || motionSections.some(section => section.id === page.split('/')[0])
   const [zh, setZh] = useState(false)
   const [progress, setProgress] = useState(readProgress)
   const t = (en: string, cn: string) => zh ? cn : en
@@ -86,7 +70,7 @@ function App() {
     <header><div className="nav">
       <a className="brand" href="#home"><img className="logo" src={mushroomMark} alt="" width="40" height="40" /><span>Mushroom Lab</span></a>
       <nav aria-label={t('Main navigation', '主导航')}>{pages.map(([id,en,cn]) =>
-        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && practiceTopic) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
+        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && (practiceTopic || motionPage)) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
       <button className="language" onClick={() => setZh(!zh)} lang={zh ? 'en' : 'zh-CN'}>{zh ? 'English' : '中文'}</button>
     </div></header>
     <main>
@@ -109,7 +93,11 @@ function App() {
           </li>)}
           <li><a href="#practice">{t('Functions & Transformations', '函数与图像变换')}</a></li>
         </ul>
-        <p><a href={syllabus}>{t('Official syllabus','官方考纲')}</a></p><p>{t('Planned modules','规划模块')} · P3 / M1 / S1</p></article>
+        <p><a href={syllabus}>{t('Official syllabus','官方考纲')}</a></p><p>{t('Planned modules','规划模块')} · P3 / S1</p></article>
+      <article className="card"><p className="eyebrow">9709 · Paper 4</p><h2>Mechanics</h2>
+        <p><a className="button" href="#m1">{t('M1 Practice', 'M1 练习')}</a></p>
+        <p><a href="#m1-motion-notes">{t('Chapter 1 · Motion in a straight line notes', '第一章 · 直线运动笔记')}</a></p>
+      </article>
       <article className="card"><p className="eyebrow">0580</p><h2>IGCSE Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
       <article className="card"><p className="eyebrow">9231</p><h2>Further Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
     </div></>}
@@ -132,6 +120,7 @@ function App() {
             <a href={import.meta.env.BASE_URL + 'study-notes/' + prefix + '-' + String(index + 1).padStart(2, '0') + '.pdf'}>
               {t(en, cn)} (PDF)
             </a>
+            {prefix === 'm1' && index === 0 && <> · <a href="#m1-motion-notes">{t('Notes & practice', '笔记与练习')}</a></>}
           </li>)}</ul>
         </article>)}
       </section>
@@ -139,10 +128,11 @@ function App() {
     {page === 'about' && <><p className="eyebrow">{t('Academic Portfolio','学术主页')}</p><h1>Bowen Wei</h1><article className="card reading"><h2>{t('Education','教育背景')}</h2><p>University of Manchester · Mathematics with Financial Mathematics</p><h2>{t('Teaching & curriculum','教学与课程开发')}</h2><p>{t('International mathematics teaching, curriculum development and mathematics teaching leadership.', '国际课程数学教学、课程开发与数学教研管理。')}</p></article></>}
     {practiceTopic && <Practice key={practiceTopic.id} topicId={practiceTopic.id} t={t} progress={progress} complete={complete}
       exercises={practiceTopic.exercises} topicTasks={practiceTopic.tasks} title={t(practiceTopic.title[0], practiceTopic.title[1])} />}
+    {motionPage && <MotionPractice page={page} t={t} />}
     {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
       <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
-    {page !== 'teacher' && page !== 'past-papers' && !practiceTopic && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
+    {page !== 'teacher' && page !== 'past-papers' && !practiceTopic && !motionPage && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
     </main>
     <footer><strong>Mushroom Lab</strong><a href="#teacher">{t('Question Builder','教师题目编辑器')}</a><span>{t('Explore Mathematics Differently.','蘑菇数学实验室')}</span></footer>
   </>
