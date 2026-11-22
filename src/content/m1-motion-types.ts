@@ -29,6 +29,14 @@ export type ForceDiagram = {
   arrows: { direction: 'up' | 'down' | 'left' | 'right'; label: string }[]
 }
 
+export type PlanarDiagram = {
+  body?: string
+  slope?: number
+  axesAngle?: number
+  forces: { angle: number; label: string }[]
+  angles?: { from: number; to: number }[]
+}
+
 export type MotionQuestion = {
   id: string
   title: string
@@ -37,6 +45,8 @@ export type MotionQuestion = {
   candidates?: MotionPlot[]
   forceDiagram?: ForceDiagram
   workedForceDiagram?: ForceDiagram
+  planarDiagram?: PlanarDiagram
+  workedPlanarDiagram?: PlanarDiagram
   parts: MotionPart[]
   hint: Bilingual
   steps: { math: string; en: string; zh: string }[]

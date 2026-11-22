@@ -9,6 +9,7 @@ import { grade } from './grading'
 import { MathText } from './MathText'
 import { MotionPlot } from './MotionPlot'
 import { ForceDiagram } from './ForceDiagram'
+import { PlanarForceDiagram } from './PlanarForceDiagram'
 import './motion.css'
 
 type Translate = (en: string, zh: string) => string
@@ -64,6 +65,7 @@ function MotionExercise({ question, history, t, mark }: {
     <div lang="en" className="motion-prompt"><MotionText value={question.prompt} /></div>
     {question.plot && <MotionPlot plot={question.plot} />}
     {question.forceDiagram && <ForceDiagram diagram={question.forceDiagram} caption={t('Force diagram · schematic', '受力示意图')} />}
+    {question.planarDiagram && <PlanarForceDiagram diagram={question.planarDiagram} caption={t('Force diagram · schematic', '受力示意图')} />}
     <form onSubmit={submit}>
       {question.parts.map((part, index) => {
         const submitted = submission?.responses[index]
@@ -119,6 +121,8 @@ function MotionExercise({ question, history, t, mark }: {
       {showSolution && <section aria-label={t('Worked solution steps', '逐行解析')}>
         {question.workedForceDiagram && <ForceDiagram diagram={question.workedForceDiagram}
           caption={t('Forces used in the solution', '解析中的受力图')} />}
+        {question.workedPlanarDiagram && <PlanarForceDiagram diagram={question.workedPlanarDiagram}
+          caption={t('Forces and axes used in the solution', '解析中的受力与坐标轴')} />}
         {question.plot?.kind !== 'line' && question.plot?.analysis && <MotionPlot plot={question.plot} explain
           caption={t(question.plot.analysis.areas ? 'Signed area by region' : 'Gradient triangle',
             question.plot.analysis.areas ? '分区标注带符号面积' : '斜率三角形')} />}

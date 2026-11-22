@@ -7,10 +7,10 @@ import { grade } from './grading.ts'
 const [motion, forces] = m1Chapters
 const questions = forces.sections.flatMap(section => section.questions).sort((a, b) => a.id.localeCompare(b.id))
 
-test('both M1 chapters have distinct question IDs and valid chapter, note and section links', () => {
+test('the M1 chapters have distinct question IDs and valid chapter, note and section links', () => {
   const all = m1Chapters.flatMap(chapter => chapter.sections.flatMap(section => section.questions))
-  assert.equal(all.length, 100)
-  assert.equal(new Set(all.map(question => question.id)).size, 100)
+  assert.equal(all.length, 120)
+  assert.equal(new Set(all.map(question => question.id)).size, 120)
   assert.equal(findM1Chapter('m1-motion-st'), motion)
   assert.deepEqual(forces.sections.map(section => section.questions.length), [17, 17, 16])
   const initialIds = [[1, 7], [8, 14], [15, 20]]

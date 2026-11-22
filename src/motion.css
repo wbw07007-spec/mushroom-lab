@@ -179,6 +179,17 @@
 .force-body { stroke: currentColor; stroke-width: 1.7; fill: #f1f5ed; }
 .force-surface { stroke: #77877d; stroke-width: 1.5; fill: none; }
 
+.planar-figure { max-width: 540px; }
+.planar-svg text { font-size: 17px; }
+.planar-surface { stroke: #54665e; stroke-width: 2; }
+.planar-hatch { stroke: #899990; stroke-width: 1.3; }
+.planar-reference, .planar-axis { stroke: #687971; stroke-width: 1.3; stroke-dasharray: 4 4; }
+.planar-load line { stroke: currentColor; stroke-width: 2.35; }
+.planar-load text { font-weight: 650; }
+.planar-angle path { fill: none; stroke: #9a4a2e; stroke-width: 1.5; }
+.planar-angle-guide { stroke: #a89b8f; stroke-width: 1.15; stroke-dasharray: 3 3; }
+.planar-angle text { fill: #8b422a; }
+
 .motion-candidates {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
