@@ -1,6 +1,9 @@
 import { motionNoteSections, motionSections, motionTitle } from './m1-motion.ts'
 import { resultantForceQuestions, verticalMotionFoundation } from './m1-forces-foundation.ts'
 import { liftQuestions, verticalMotionApplication } from './m1-forces-application.ts'
+import { extraResultantForceQuestions } from './m1-forces-extension-resultant.ts'
+import { extraVerticalForceQuestions } from './m1-forces-extension-vertical.ts'
+import { extraLiftQuestions } from './m1-forces-extension-lifts.ts'
 import type { Bilingual, MotionSection } from './m1-motion-types.ts'
 
 type NoteSection = { page: number; number: string; title: Bilingual; sectionId: string; questionId?: string }
@@ -14,10 +17,12 @@ type M1Chapter = {
 }
 
 const forcesSections: MotionSection[] = [
-  { id: 'm1-forces-resultant', notePage: 1, title: ['Resultant force & motion', '合力与运动'], questions: resultantForceQuestions },
+  { id: 'm1-forces-resultant', notePage: 1, title: ['Resultant force & motion', '合力与运动'],
+    questions: [...resultantForceQuestions, ...extraResultantForceQuestions] },
   { id: 'm1-forces-vertical', notePage: 2, title: ['Weight & vertical motion', '重力与竖直运动'],
-    questions: [...verticalMotionFoundation, ...verticalMotionApplication] },
-  { id: 'm1-forces-lifts', notePage: 3, title: ['Normal reaction & lifts', '法向反作用力与电梯'], questions: liftQuestions },
+    questions: [...verticalMotionFoundation, ...verticalMotionApplication, ...extraVerticalForceQuestions] },
+  { id: 'm1-forces-lifts', notePage: 3, title: ['Normal reaction & lifts', '法向反作用力与电梯'],
+    questions: [...liftQuestions, ...extraLiftQuestions] },
 ]
 
 export const m1Chapters: M1Chapter[] = [
