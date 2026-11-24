@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
-import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import './styles.css'
 import mushroomMark from './mushroom-mark.svg'
@@ -9,14 +8,18 @@ import { functionNotes } from './content/function-notes'
 import { TeacherEditor } from './TeacherEditor'
 import { SignGraph } from './SignGraph'
 import { ChordOfContactDiagram } from './ChordOfContactDiagram'
-import { bank, glossary } from './content/questions'
+import { bank } from './content/questions'
 import { practiceTopics } from './content/practice-topics'
 import type { Exercise, Task } from './content/questions'
 import { grade } from './grading'
+import { MathText } from './MathText'
+import { vectorMode, vectorRoute, vectorScenes } from './vector-lab/vector-routes'
+
+const VectorLab = lazy(() => import('./vector-lab/VectorLab').then(module => ({ default: module.VectorLab })))
 
 const pages = [
   ['home', 'Home', '首页'], ['academy', 'Academy', '课程'],
-  ['practice', 'Practice', '练习'], ['library', 'Resource Library', '资源库'],
+  ['practice', 'Practice', '练习'], ['math-lab', 'Math Lab', '数学实验室'], ['library', 'Resource Library', '资源库'],
   ['about', 'About', '学术主页'],
 ]
 const tasks = practiceTopics.flatMap(topic => topic.tasks)
@@ -32,28 +35,6 @@ const studyNotes = [
     ['Transformations and vectors', '变换与向量'], ['Probability', '概率'], ['Statistics', '统计'],
   ] },
 ] as const
-const terms = new RegExp('\\b(' + Object.keys(glossary).sort((a, b) => b.length - a.length).join('|') + ')\\b', 'gi')
-
-function MathText({ value, translate = false }: {value: string; translate?: boolean}) {
-  return value.split('$').map((part, i) => {
-    if (i % 2) return <span key={i} dangerouslySetInnerHTML={{__html: katex.renderToString(part, {throwOnError: false})}} />
-    if (!translate) return part
-    return part.split(terms).map((word, j) => j % 2
-      ? <Term key={i + '-' + j} word={word} />
-      : word)
-  })
-}
-
-function Term({ word }: { word: string }) {
-  const [open, setOpen] = useState(false)
-  return <span className="term">
-    <button type="button" className="term-button" aria-expanded={open}
-      onClick={() => setOpen(!open)} onBlur={() => setOpen(false)}
-      onKeyDown={event => { if (event.key === 'Escape') setOpen(false) }}>{word}</button>
-    <span className="definition" role="tooltip" lang="zh-CN">{glossary[word.toLowerCase()]}</span>
-  </span>
-}
-
 function readProgress(): string[] {
   try {
     const data: unknown = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
@@ -64,6 +45,7 @@ function readProgress(): string[] {
 function App() {
   const [page, setPage] = useState(location.hash.slice(1) || 'home')
   const practiceTopic = practiceTopics.find(topic => topic.id === page)
+  const labMode = vectorMode(page)
   const [zh, setZh] = useState(false)
   const [progress, setProgress] = useState(readProgress)
   const t = (en: string, cn: string) => zh ? cn : en
@@ -86,7 +68,8 @@ function App() {
     <header><div className="nav">
       <a className="brand" href="#home"><img className="logo" src={mushroomMark} alt="" width="40" height="40" /><span>Mushroom Lab</span></a>
       <nav aria-label={t('Main navigation', '主导航')}>{pages.map(([id,en,cn]) =>
-        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && practiceTopic) ? 'page' : undefined}>{t(en,cn)}</a>)}</nav>
+        <a key={id} href={'#'+id} aria-current={page === id || (id === 'practice' && practiceTopic) ? 'page' :
+          (id === 'math-lab' && labMode) || (id === 'academy' && (page === 'p3' || page === 'p3-vectors')) ? 'location' : undefined}>{t(en,cn)}</a>)}</nav>
       <button className="language" onClick={() => setZh(!zh)} lang={zh ? 'en' : 'zh-CN'}>{zh ? 'English' : '中文'}</button>
     </div></header>
     <main>
@@ -109,10 +92,27 @@ function App() {
           </li>)}
           <li><a href="#practice">{t('Functions & Transformations', '函数与图像变换')}</a></li>
         </ul>
-        <p><a href={syllabus}>{t('Official syllabus','官方考纲')}</a></p><p>{t('Planned modules','规划模块')} · P3 / M1 / S1</p></article>
+        <p><a href={syllabus}>{t('Official syllabus','官方考纲')}</a></p><p>{t('Planned modules','规划模块')} · M1 / S1</p></article>
+      <a className="card" href="#p3"><p className="eyebrow">9709 · P3</p><h2>Pure Mathematics 3</h2>
+        <p>{t('Chapter 9 · Vectors', '第九章 · 向量')}</p></a>
       <article className="card"><p className="eyebrow">0580</p><h2>IGCSE Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
       <article className="card"><p className="eyebrow">9231</p><h2>Further Mathematics</h2><p>{t('Planned course','规划课程')}</p></article>
     </div></>}
+    {page === 'p3' && <>
+      <p><a href="#academy">{t('Academy', '课程中心')}</a></p><h1 className="practice-title">Pure Mathematics 3</h1>
+      <div className="cards"><a className="card" href="#p3-vectors"><h2>{t('Chapter 9 · Vectors', '第九章 · 向量')}</h2></a></div>
+    </>}
+    {page === 'p3-vectors' && <>
+      <p><a href="#p3">Pure Mathematics 3</a></p><h1 className="practice-title">{t('Chapter 9 · Vectors', '第九章 · 向量')}</h1>
+      <div className="cards">{vectorScenes.map(scene =>
+        <a className="card" key={scene.mode} href={vectorRoute(scene.mode)}><h2>{t(scene.title[0], scene.title[1])}</h2></a>)}</div>
+    </>}
+    {page === 'math-lab' && <>
+      <h1 className="practice-title">{t('Math Lab', '数学实验室')}</h1>
+      <div className="cards"><a className="card" href={vectorRoute('line')}><h2>{t('3D Vectors', '三维向量')}</h2>
+        <p>{t('Explore points, vectors and lines in three dimensions.', '在三维空间探索点、向量和直线。')}</p></a></div>
+    </>}
+    {labMode && <Suspense fallback={<p role="status">{t('Loading Vector Lab…', '正在载入向量实验室…')}</p>}><VectorLab mode={labMode} t={t} /></Suspense>}
     {page === 'library' && <>
       <h1>{t('Resource Library','教学资源库')}</h1>
       <article className="card reading function-notes">
@@ -142,7 +142,7 @@ function App() {
     {page === 'past-papers' && <p><a href="#library">{t('Return to Resource Library','返回教学资源库')}</a></p>}
     {page === 'teacher' && <TeacherEditor t={t} preview={(task, context) =>
       <Question key={JSON.stringify(task)} task={task} context={context} t={t} onCorrect={() => {}} />} />}
-    {page !== 'teacher' && page !== 'past-papers' && !practiceTopic && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
+    {page !== 'teacher' && page !== 'past-papers' && page !== 'p3' && page !== 'p3-vectors' && !labMode && !practiceTopic && !pages.some(([id]) => page === id) && <><h1>{t('Page unavailable','页面无法访问')}</h1><a href="#home">{t('Return home','返回首页')}</a></>}
     </main>
     <footer><strong>Mushroom Lab</strong><a href="#teacher">{t('Question Builder','教师题目编辑器')}</a><span>{t('Explore Mathematics Differently.','蘑菇数学实验室')}</span></footer>
   </>
