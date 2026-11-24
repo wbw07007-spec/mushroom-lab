@@ -181,5 +181,18 @@ export const glossary: Record<string, string> = {
   'domain': '定义域。函数允许的所有输入值。',
   'reflected': '反射。图像关于指定轴或直线作镜像变换。',
   'real': '实数。',
+  'position vector': '位置向量。起点是原点，终点是所描述的点。',
+  'displacement vector': '位移向量。用终点的位置向量减去起点的位置向量。',
+  'direction vector': '方向向量。非零向量，确定直线的方向。',
+  'scalar multiple': '数乘。把向量的每个分量乘以同一个数。',
+  'zero vector': '零向量。三个分量都为零，长度为零。',
+  'magnitude': '模。向量的长度。',
+  'parameter': '参数。直线方程中可取任意实数的量。',
+  'coincident': '重合。两条方程描述同一条直线。',
+  'parallel': '平行。方向向量成比例，可能重合或分开。',
+  'intersect': '相交。两条直线有共同点。',
+  'intersecting': '相交。这里指两条不同的直线有一个共同点。',
+  'skew lines': '异面直线。两条既不平行也不相交的空间直线。',
+  'projection': '投影。沿指定方向观察时，在平面上的图像。',
 }
 
